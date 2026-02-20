@@ -1,0 +1,45 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code / VS
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
+
+# EF Core local database (om du kör SQLite)
+*.db
+*.db-shm
+*.db-wal
+
+# Node (om du senare använder npm)
+node_modules/
+
+# Publish output
+publish/
+wwwroot/dist/
+
+# Azure
+.azure/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user

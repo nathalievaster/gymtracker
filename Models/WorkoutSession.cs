@@ -7,9 +7,9 @@ namespace GymTracker.Models
     {
         public int Id { get; set; }
         // Foreign Key till User
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         // Navigation property till User, så att vi kan få tillgång till all information om användaren som skapade workout sessionen
-        public IdentityUser User { get; set; }
+        public IdentityUser User { get; set; } = default!;
 
         // Datumet för workout sessionen, default NU men kan ändras av användaren när den skapar sessionen
         public DateTime Date { get; set; } = DateTime.Now;

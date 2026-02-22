@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using GymTracker.Data;
 
 namespace GymTracker.Models
 {
@@ -9,7 +10,7 @@ namespace GymTracker.Models
         // Foreign Key till User
         public string UserId { get; set; } = string.Empty;
         // Navigation property till User, så att vi kan få tillgång till all information om användaren som skapade workout sessionen
-        public IdentityUser User { get; set; } = default!;
+        public ApplicationUser User { get; set; } = default!;
 
         // Datumet för workout sessionen, default NU men kan ändras av användaren när den skapar sessionen
         public DateTime Date { get; set; } = DateTime.Now;

@@ -33,3 +33,21 @@
     font-size: 2.5em;
     margin-top: 0;
 }
+
+@media screen and (max-width: 690px) {
+    .hero-content h1 {
+        font-size: 3em;
+    }
+    .hero-content p {
+        font-size: 2em;
+    }
+}
+
+@media screen and (max-width: 390px) {
+    .hero-content h1 {
+        font-size: 2.3em;
+    }
+    .hero-content p {
+        font-size: 1.3em;
+    }
+}

@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @*Sidan kräver inloggning*@
 @attribute [Authorize]
+@rendermode InteractiveServer
 
 @using GymTracker.Data
 @using GymTracker.Models
@@ -17,8 +18,7 @@
 
 <h1>My workouts</h1>
 
-<button @onclick="GoCreate">Create workout</button>
-
+<button type="button" @onclick="GoCreate">Create workout</button>
 @if (workouts == null)
 {
     <p>Loading workouts...</p>
@@ -56,6 +56,7 @@ else
 
     void GoCreate()
     {
+        Console.WriteLine("CLICKED");
         nav.NavigateTo("/create-workout");
     }
 

@@ -1,0 +1,79 @@
+@*Url till sidan*@
+@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@*Sidan kräver inloggning*@
+@attribute [Authorize]
+
+@using GymTracker.Data
+@using GymTracker.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Linq
+@inject ApplicationDbContext db
+@inject UserManager<ApplicationUser> userManager
+
+@inject NavigationManager nav
+
+<h1>My workouts</h1>
+
+<button @onclick="GoCreate">Create workout</button>
+
+@if (workouts == null)
+{
+    <p>Loading workouts...</p>
+}
+else if (!workouts.Any())
+{
+    <p>You have no workouts yet. Get started!</p>
+}
+else
+{
+    <ul>
+        @foreach (var w in workouts)
+        {
+            <li>
+                <b>@w.Title</b> (@w.Date.ToShortDateString())
+                <button @onclick="() => DeleteWorkout(w.Id)">Delete</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    List<WorkoutSession>? workouts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        workouts = db.WorkoutSessions
+            .Where(w => w.UserId == user!.Id)
+            .OrderByDescending(w => w.Date)
+            .ToList();
+    }
+
+    void GoCreate()
+    {
+        nav.NavigateTo("/create-workout");
+    }
+
+    async Task DeleteWorkout(int id)
+    {
+        var workout = db.WorkoutSessions.FirstOrDefault(x => x.Id == id);
+        if (workout != null)
+        {
+            db.WorkoutSessions.Remove(workout);
+            await db.SaveChangesAsync();
+        }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        workouts = db.WorkoutSessions
+            .Where(w => w.UserId == user!.Id)
+            .OrderByDescending(w => w.Date)
+            .ToList();
+    }
+}

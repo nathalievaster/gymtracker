@@ -1,0 +1,59 @@
+@page "/create-workout"
+@attribute [Authorize]
+
+@using GymTracker.Data
+@using GymTracker.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject ApplicationDbContext db
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager nav
+
+<h1>Create workout</h1>
+
+<EditForm Model="model" OnValidSubmit="SaveWorkout">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Title</label>
+        <InputText @bind-Value="model.Title" />
+    </div>
+
+    <div>
+        <label>Date</label>
+        <InputDate @bind-Value="model.Date" />
+    </div>
+
+    <div>
+        <label>Notes</label>
+        <InputTextArea @bind-Value="model.Notes" />
+    </div>
+
+    <br />
+    <button type="submit">Save</button>
+</EditForm>
+
+@code {
+    WorkoutSession model = new()
+    {
+        Date = DateTime.Today
+    };
+
+    async Task SaveWorkout()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        model.UserId = user!.Id;
+        model.CreatedAt = DateTime.Now;
+
+        db.WorkoutSessions.Add(model);
+        await db.SaveChangesAsync();
+
+        nav.NavigateTo("/dashboard");
+    }
+}

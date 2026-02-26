@@ -39,7 +39,7 @@ else
     {
         @foreach (var we in workout.WorkoutExercises)
         {
-            <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:10px;">
+            <article>
 
                 <h5>@we.Exercise?.Name</h5>
 
@@ -76,8 +76,10 @@ else
                 {
                     <button class="add-btn" @onclick="() => StartAddSet(we.Id)">Add set</button>
                 }
+                <br />
+                <button class="undo-btn" @onclick="() => DeleteExercise(we.Id)">Delete exercise</button>
 
-            </div>
+            </article>
         }
     }
 
@@ -127,7 +129,6 @@ else
 
     bool showExerciseModal = false;
 
-    // SET STATE
     int activeSetExerciseId = 0;
     int newReps = 0;
     double newWeight = 0;
@@ -153,10 +154,7 @@ else
         allExercises = db.Exercises.OrderBy(e => e.Name).ToList();
     }
 
-    void GoBack()
-    {
-        nav.NavigateTo("/dashboard");
-    }
+    void GoBack() => nav.NavigateTo("/dashboard");
 
     void OpenExerciseModal() => showExerciseModal = true;
     void CloseExerciseModal() => showExerciseModal = false;
@@ -193,6 +191,21 @@ else
         selectedExerciseId = 0;
     }
 
+    async Task DeleteExercise(int workoutExerciseId)
+    {
+        var we = db.WorkoutExercises
+            .Include(x => x.Sets)
+            .FirstOrDefault(x => x.Id == workoutExerciseId);
+
+        if (we != null)
+        {
+            db.WorkoutExercises.Remove(we);
+            await db.SaveChangesAsync();
+        }
+
+        await ReloadWorkout();
+    }
+
     void StartAddSet(int workoutExerciseId)
     {
         activeSetExerciseId = workoutExerciseId;
@@ -200,10 +213,7 @@ else
         newWeight = 0;
     }
 
-    void CancelSet()
-    {
-        activeSetExerciseId = 0;
-    }
+    void CancelSet() => activeSetExerciseId = 0;
 
     async Task SaveSet(int workoutExerciseId)
     {

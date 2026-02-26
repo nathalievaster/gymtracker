@@ -18,7 +18,7 @@
 
 <h1>My workouts</h1>
 
-<button type="button" @onclick="GoCreate">Create workout</button>
+<button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
 @if (workouts == null)
 {
     <p>Loading workouts...</p>
@@ -37,7 +37,7 @@ else
                     <b>@w.Title</b> (@w.Date.ToShortDateString())
                 </a>
 
-                <button @onclick="() => DeleteWorkout(w.Id)">Delete</button>
+                <button class="undo-btn" @onclick="() => DeleteWorkout(w.Id)">Delete</button>
             </li>
         }
     </ul>

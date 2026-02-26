@@ -7,3 +7,21 @@ html, body {
 * {
     box-sizing: border-box;
 }
+
+button {
+    border-radius: 25px;
+    padding: 1em 1.5em;
+    font-weight: bold;
+    border: none;
+    font-size: 1em;
+}
+
+button.add-btn {
+    background-color: #FF8225;
+    color: #173B45;
+}
+
+button.undo-btn {
+    background-color: #B43F3F;
+    color: #F8EDED;
+}

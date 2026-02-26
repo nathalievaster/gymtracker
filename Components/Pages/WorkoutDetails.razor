@@ -27,7 +27,7 @@ else
     <p>@workout.Date.ToShortDateString()</p>
     <p>@workout.Notes</p>
 
-    <button @onclick="OpenExerciseModal">Add exercise</button>
+    <button class="add-btn" @onclick="OpenExerciseModal">Add exercise</button>
 
     <h4>Exercises</h4>
 
@@ -46,7 +46,7 @@ else
     }
 
     <br />
-    <button @onclick="GoBack">Back</button>
+    <button class="undo-btn" @onclick="GoBack">Back</button>
 }
 
 @if (showExerciseModal)
@@ -72,8 +72,8 @@ else
 
             <br /><br />
 
-            <button @onclick="AddExerciseToWorkout">Add</button>
-            <button @onclick="CloseExerciseModal">Cancel</button>
+            <button class="add-btn" @onclick="AddExerciseToWorkout">Add</button>
+            <button class="undo-btn" @onclick="CloseExerciseModal">Cancel</button>
 
         </div>
     </div>

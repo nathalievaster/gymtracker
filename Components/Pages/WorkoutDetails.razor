@@ -31,18 +31,54 @@ else
 
     <h4>Exercises</h4>
 
-    @if (workout.WorkoutExercises == null || !workout.WorkoutExercises.Any())
+    @if (!workout.WorkoutExercises.Any())
     {
         <p>No exercises yet</p>
     }
     else
     {
-        <ul>
-            @foreach (var we in workout.WorkoutExercises)
-            {
-                <li>@we.Exercise?.Name</li>
-            }
-        </ul>
+        @foreach (var we in workout.WorkoutExercises)
+        {
+            <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:10px;">
+
+                <h5>@we.Exercise?.Name</h5>
+
+                @* LISTA SETS *@
+                @if (!we.Sets.Any())
+                {
+                    <p>No sets yet</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var s in we.Sets)
+                        {
+                            <li>@s.Reps reps - @s.Weight kg</li>
+                        }
+                    </ul>
+                }
+
+                @* ADD SET *@
+                @if (activeSetExerciseId == we.Id)
+                {
+                    <div style="margin-top:10px;">
+                        <label for="reps">Reps</label>
+                        <input name="reps" type="number" @bind="newReps" />
+
+                        <label for="weight">Weight</label>
+                        <input name="weight" type="number" @bind="newWeight" />
+
+                        <button class="add-btn" @onclick="() => SaveSet(we.Id)">Save</button>
+                        <button class="undo-btn" @onclick="CancelSet">Cancel</button>
+                    </div>
+                }
+                else
+                {
+                    <button class="add-btn" @onclick="() => StartAddSet(we.Id)">Add set</button>
+                }
+
+            </div>
+        }
     }
 
     <br />
@@ -91,6 +127,11 @@ else
 
     bool showExerciseModal = false;
 
+    // SET STATE
+    int activeSetExerciseId = 0;
+    int newReps = 0;
+    double newWeight = 0;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -99,6 +140,8 @@ else
         workout = db.WorkoutSessions
             .Include(w => w.WorkoutExercises)
             .ThenInclude(we => we.Exercise)
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Sets)
             .FirstOrDefault(w => w.Id == id && w.UserId == user!.Id);
 
         if (workout == null)
@@ -107,9 +150,7 @@ else
             return;
         }
 
-        allExercises = db.Exercises
-            .OrderBy(e => e.Name)
-            .ToList();
+        allExercises = db.Exercises.OrderBy(e => e.Name).ToList();
     }
 
     void GoBack()
@@ -117,34 +158,19 @@ else
         nav.NavigateTo("/dashboard");
     }
 
-    void OpenExerciseModal()
-    {
-        showExerciseModal = true;
-    }
-
-    void CloseExerciseModal()
-    {
-        showExerciseModal = false;
-    }
+    void OpenExerciseModal() => showExerciseModal = true;
+    void CloseExerciseModal() => showExerciseModal = false;
 
     async Task AddExerciseToWorkout()
     {
         Exercise? exercise = null;
 
-        // valt från dropdown
         if (selectedExerciseId != 0)
-        {
             exercise = db.Exercises.FirstOrDefault(e => e.Id == selectedExerciseId);
-        }
 
-        // skapa ny övning
         if (!string.IsNullOrWhiteSpace(newExerciseName))
         {
-            exercise = new Exercise
-            {
-                Name = newExerciseName
-            };
-
+            exercise = new Exercise { Name = newExerciseName };
             db.Exercises.Add(exercise);
             await db.SaveChangesAsync();
         }
@@ -160,14 +186,52 @@ else
         db.WorkoutExercises.Add(workoutExercise);
         await db.SaveChangesAsync();
 
-        // reload workout med relationsdata
-        workout = db.WorkoutSessions
-            .Include(w => w.WorkoutExercises)
-            .ThenInclude(we => we.Exercise)
-            .FirstOrDefault(w => w.Id == workout!.Id);
+        await ReloadWorkout();
 
         showExerciseModal = false;
         newExerciseName = "";
         selectedExerciseId = 0;
+    }
+
+    void StartAddSet(int workoutExerciseId)
+    {
+        activeSetExerciseId = workoutExerciseId;
+        newReps = 0;
+        newWeight = 0;
+    }
+
+    void CancelSet()
+    {
+        activeSetExerciseId = 0;
+    }
+
+    async Task SaveSet(int workoutExerciseId)
+    {
+        if (newReps <= 0) return;
+
+        var set = new SetEntry
+        {
+            WorkoutExerciseId = workoutExerciseId,
+            Reps = newReps,
+            Weight = newWeight
+        };
+
+        db.Sets.Add(set);
+        await db.SaveChangesAsync();
+
+        activeSetExerciseId = 0;
+        await ReloadWorkout();
+    }
+
+    async Task ReloadWorkout()
+    {
+        workout = db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Exercise)
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Sets)
+            .FirstOrDefault(w => w.Id == workout!.Id);
+
+        await InvokeAsync(StateHasChanged);
     }
 }

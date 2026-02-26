@@ -1,0 +1,127 @@
+@page "/exercises"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using GymTracker.Data
+@using GymTracker.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext db
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h1>Exercise library</h1>
+
+<section style="margin-bottom:30px; border:1px solid #ccc; padding:20px; border-radius:12px;">
+    <h3>Add new exercise</h3>
+
+    <input placeholder="Exercise name" @bind="newExerciseName"/>
+
+    <textarea placeholder="Description (optional)" @bind="newExerciseDescription"></textarea>
+
+    <br /><br />
+
+    <button class="add-btn" @onclick="CreateExercise">Add exercise</button>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <p style="color:green;">@message</p>
+    }
+</section>
+
+<h3>All exercises</h3>
+
+@if (exercises == null)
+{
+    <p>Loading...</p>
+}
+else if (!exercises.Any())
+{
+    <p>No exercises created yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var ex in exercises)
+        {
+            <li>
+                <b>@ex.Name</b>
+                @if (!string.IsNullOrWhiteSpace(ex.Description))
+                {
+                    <span> — @ex.Description</span>
+                }
+
+                <button class="undo-btn"@onclick="() => DeleteExercise(ex.Id)">Delete</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    List<Exercise>? exercises;
+
+    string newExerciseName = "";
+    string newExerciseDescription = "";
+    string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExercises();
+    }
+
+    async Task LoadExercises()
+    {
+        exercises = await db.Exercises
+            .OrderBy(e => e.Name)
+            .ToListAsync();
+    }
+
+    async Task CreateExercise()
+    {
+        message = "";
+
+        if (string.IsNullOrWhiteSpace(newExerciseName))
+        {
+            message = "Exercise name required";
+            return;
+        }
+
+        var exists = await db.Exercises
+            .AnyAsync(e => e.Name.ToLower() == newExerciseName.ToLower());
+
+        if (exists)
+        {
+            message = "Exercise already exists";
+            return;
+        }
+
+        var exercise = new Exercise
+        {
+            Name = newExerciseName.Trim(),
+            Description = newExerciseDescription
+        };
+
+        db.Exercises.Add(exercise);
+        await db.SaveChangesAsync();
+
+        newExerciseName = "";
+        newExerciseDescription = "";
+        message = "Exercise added";
+
+        await LoadExercises();
+    }
+
+    async Task DeleteExercise(int id)
+    {
+        var ex = await db.Exercises.FindAsync(id);
+        if (ex == null) return;
+
+        db.Exercises.Remove(ex);
+        await db.SaveChangesAsync();
+
+        await LoadExercises();
+    }
+}

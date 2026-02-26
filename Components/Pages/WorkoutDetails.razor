@@ -7,6 +7,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
 
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
@@ -25,14 +27,69 @@ else
     <p>@workout.Date.ToShortDateString()</p>
     <p>@workout.Notes</p>
 
+    <button @onclick="OpenExerciseModal">Add exercise</button>
+
+    <h4>Exercises</h4>
+
+    @if (workout.WorkoutExercises == null || !workout.WorkoutExercises.Any())
+    {
+        <p>No exercises yet</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var we in workout.WorkoutExercises)
+            {
+                <li>@we.Exercise?.Name</li>
+            }
+        </ul>
+    }
+
     <br />
     <button @onclick="GoBack">Back</button>
 }
 
+@if (showExerciseModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-box">
+
+            <h3>Add exercise</h3>
+
+            <select @bind="selectedExerciseId">
+                <option value="0">Select exercise</option>
+                @foreach (var ex in allExercises)
+                {
+                    <option value="@ex.Id">@ex.Name</option>
+                }
+            </select>
+
+            <br /><br />
+
+            <b>or create new</b>
+
+            <InputText @bind-Value="newExerciseName" placeholder="Exercise name" />
+
+            <br /><br />
+
+            <button @onclick="AddExerciseToWorkout">Add</button>
+            <button @onclick="CloseExerciseModal">Cancel</button>
+
+        </div>
+    </div>
+}
+
 @code {
+    List<Exercise> allExercises = new();
+
+    int selectedExerciseId = 0;
+    string newExerciseName = "";
+
     [Parameter] public int id { get; set; }
 
     WorkoutSession? workout;
+
+    bool showExerciseModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,16 +97,77 @@ else
         var user = await userManager.GetUserAsync(authState.User);
 
         workout = db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Exercise)
             .FirstOrDefault(w => w.Id == id && w.UserId == user!.Id);
 
         if (workout == null)
         {
             nav.NavigateTo("/dashboard");
+            return;
         }
+
+        allExercises = db.Exercises
+            .OrderBy(e => e.Name)
+            .ToList();
     }
 
     void GoBack()
     {
         nav.NavigateTo("/dashboard");
+    }
+
+    void OpenExerciseModal()
+    {
+        showExerciseModal = true;
+    }
+
+    void CloseExerciseModal()
+    {
+        showExerciseModal = false;
+    }
+
+    async Task AddExerciseToWorkout()
+    {
+        Exercise? exercise = null;
+
+        // valt från dropdown
+        if (selectedExerciseId != 0)
+        {
+            exercise = db.Exercises.FirstOrDefault(e => e.Id == selectedExerciseId);
+        }
+
+        // skapa ny övning
+        if (!string.IsNullOrWhiteSpace(newExerciseName))
+        {
+            exercise = new Exercise
+            {
+                Name = newExerciseName
+            };
+
+            db.Exercises.Add(exercise);
+            await db.SaveChangesAsync();
+        }
+
+        if (exercise == null) return;
+
+        var workoutExercise = new WorkoutExercise
+        {
+            WorkoutSessionId = workout!.Id,
+            ExerciseId = exercise.Id
+        };
+
+        db.WorkoutExercises.Add(workoutExercise);
+        await db.SaveChangesAsync();
+
+        // reload workout med relationsdata
+        workout = db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Exercise)
+            .FirstOrDefault(w => w.Id == workout!.Id);
+
+        showExerciseModal = false;
+        newExerciseName = "";
+        selectedExerciseId = 0;
     }
 }

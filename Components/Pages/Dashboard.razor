@@ -33,7 +33,10 @@ else
         @foreach (var w in workouts)
         {
             <li>
-                <b>@w.Title</b> (@w.Date.ToShortDateString())
+                <a href="/workout/@w.Id">
+                    <b>@w.Title</b> (@w.Date.ToShortDateString())
+                </a>
+
                 <button @onclick="() => DeleteWorkout(w.Id)">Delete</button>
             </li>
         }

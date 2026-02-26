@@ -1,0 +1,55 @@
+@page "/workout/{id:int}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using GymTracker.Data
+@using GymTracker.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject ApplicationDbContext db
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager nav
+
+<h2>Workout</h2>
+
+@if (workout == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <h3>@workout.Title</h3>
+    <p>@workout.Date.ToShortDateString()</p>
+    <p>@workout.Notes</p>
+
+    <br />
+    <button @onclick="GoBack">Back</button>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    WorkoutSession? workout;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        workout = db.WorkoutSessions
+            .FirstOrDefault(w => w.Id == id && w.UserId == user!.Id);
+
+        if (workout == null)
+        {
+            nav.NavigateTo("/dashboard");
+        }
+    }
+
+    void GoBack()
+    {
+        nav.NavigateTo("/dashboard");
+    }
+}

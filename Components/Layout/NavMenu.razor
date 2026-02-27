@@ -18,7 +18,7 @@
     <div class="right">
         @if (isLoggedIn)
         {
-            <button class="login-btn" @onclick="HandleLogout">Logout</button>
+            <button class="login-btn" @onclick="Logout">Logout</button>
             <button class="burger" @onclick="ToggleMenu">
                 @(menuOpen ? "✕" : "☰")
             </button>
@@ -62,9 +62,8 @@
             Nav.NavigateTo("/");
     }
 
-    async Task HandleLogout()
+    void Logout()
     {
-        await SignInManager.SignOutAsync();
-        Nav.NavigateTo("/Account/Login", true);
+        Nav.NavigateTo("/Account/Logout", true);
     }
 }

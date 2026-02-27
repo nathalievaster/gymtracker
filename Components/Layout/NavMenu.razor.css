@@ -11,3 +11,55 @@
     padding: 0 20px;
     z-index: 3;
 }
+
+.logo {
+    font-weight: bold;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.links {
+    display: flex;
+    gap: 2em;
+}
+
+.links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.links a:hover {
+    opacity: 0.7;
+}
+
+.menu-button {
+    display: none;
+    font-size: 1.6em;
+    cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+    .links {
+        display: none;
+    }
+
+    .menu-button {
+        display: block;
+    }
+
+    .mobile-menu {
+        display: flex;
+        flex-direction: column;
+        background: #12343b;
+        padding: 1em 2em;
+        gap: 1em;
+    }
+
+    .mobile-menu a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1em;
+    }
+}

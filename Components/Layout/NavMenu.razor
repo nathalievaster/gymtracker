@@ -1,38 +1,65 @@
-﻿@implements IDisposable
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using GymTracker.Data
 
-@inject NavigationManager NavigationManager
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">GymTracker</a>
+<header class="topbar">
+
+    <!-- LOGO vänster -->
+    <div class="logo" @onclick="GoHome">
+        GymTracker
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+    <!-- HÖGER: logout + burger -->
+    <div class="right">
+        @if (isLoggedIn)
+        {
+            <button class="login-btn" @onclick="Logout">Logout</button>
+            <button class="burger" @onclick="ToggleMenu">☰</button>
+        }
+        else
+        {
+            <a class="login-btn" href="/Account/Login">Login</a>
+        }
+    </div>
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <a href="/">Home</a>
-    </nav>
-</div>
+</header>
+
+@if (menuOpen && isLoggedIn)
+{
+    <div class="side-menu">
+
+        <a href="/dashboard" @onclick="CloseMenu">Dashboard</a>
+        <a href="/exercises" @onclick="CloseMenu">Exercises</a>
+
+    </div>
+}
 
 @code {
-    private string? currentUrl;
+    bool menuOpen = false;
+    bool isLoggedIn = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        isLoggedIn = auth.User.Identity?.IsAuthenticated ?? false;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    void ToggleMenu() => menuOpen = !menuOpen;
+    void CloseMenu() => menuOpen = false;
+
+    void GoHome()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
+        if (isLoggedIn)
+            Nav.NavigateTo("/dashboard");
+        else
+            Nav.NavigateTo("/");
     }
 
-    public void Dispose()
+    void Logout()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        Nav.NavigateTo("/Account/Logout", true);
     }
 }

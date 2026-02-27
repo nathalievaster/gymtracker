@@ -1,65 +1,66 @@
-.navbar {
-    position: absolute;
+.topbar {
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 100%;
+    z-index: 1000;
     height: 70px;
-    background: #12343b;
+    background: #173B45;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    z-index: 3;
+    color:white;
 }
 
 .logo {
     font-weight: bold;
-    font-size: 1.5em;
+    font-size: 20px;
     cursor: pointer;
+    color: #FF8225;
 }
 
-.links {
+.burger {
+    font-size: 26px;
+    background: none;
+    border: none;
+    color: #FF8225;
+    cursor: pointer;
+    margin-left:15px;
+}
+
+.right {
     display: flex;
-    gap: 2em;
+    align-items: center;
+    gap: 0.8em;
+    margin-top: 1.6em;
 }
 
-.links a {
-    color: white;
+.login-btn {
+    background: #FF8225;
+    border: none;
+    padding: 10px 18px;
+    color: #173B45;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: 500;
-}
-
-.links a:hover {
-    opacity: 0.7;
-}
-
-.menu-button {
-    display: none;
-    font-size: 1.6em;
     cursor: pointer;
 }
 
-/* MOBILE */
-@media (max-width: 700px) {
-    .links {
-        display: none;
-    }
+.side-menu {
+    position: fixed;
+    top: 70px;
+    right: 0; 
+    width: 220px;
+    height: 100%;
+    background: #173B45;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 999;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+}
 
-    .menu-button {
-        display: block;
-    }
-
-    .mobile-menu {
-        display: flex;
-        flex-direction: column;
-        background: #12343b;
-        padding: 1em 2em;
-        gap: 1em;
-    }
-
-    .mobile-menu a {
-        color: white;
-        text-decoration: none;
-        font-size: 1.1em;
-    }
+.side-menu a {
+    color: #FF8225;
+    text-decoration: none;
+    font-size: 18px;
 }

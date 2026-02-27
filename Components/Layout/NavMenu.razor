@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using GymTracker.Data
 
+@inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 
@@ -16,7 +17,7 @@
     <div class="right">
         @if (isLoggedIn)
         {
-            <button class="login-btn" @onclick="Logout">Logout</button>
+            <button class="login-btn" @onclick="HandleLogout">Logout</button>
             <button class="burger" @onclick="ToggleMenu">☰</button>
         }
         else
@@ -58,8 +59,9 @@
             Nav.NavigateTo("/");
     }
 
-    void Logout()
+    async Task HandleLogout()
     {
-        Nav.NavigateTo("/Account/Logout", true);
+        await SignInManager.SignOutAsync();
+        Nav.NavigateTo("/Account/Login", true);
     }
 }

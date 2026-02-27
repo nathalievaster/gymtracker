@@ -19,7 +19,9 @@
         @if (isLoggedIn)
         {
             <button class="login-btn" @onclick="HandleLogout">Logout</button>
-            <button class="burger" @onclick="ToggleMenu">☰</button>
+            <button class="burger" @onclick="ToggleMenu">
+                @(menuOpen ? "✕" : "☰")
+            </button>
         }
         else
         {

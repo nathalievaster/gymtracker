@@ -20,8 +20,8 @@
     <section class="card">
         <h3>Create GLOBAL exercise (admin)</h3>
 
-        <input placeholder="Exercise name" @bind="newExerciseName"/>
-        <textarea placeholder="Description" @bind="newExerciseDescription"></textarea>
+        <input placeholder="Exercise name" @bind="globalName"/>
+        <textarea placeholder="Description" @bind="globalDescription"></textarea>
 
         <br /><br />
         <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
@@ -31,8 +31,8 @@
 <section class="card">
     <h3>Create personal exercise</h3>
 
-    <input placeholder="Exercise name" @bind="newExerciseName"/>
-    <textarea placeholder="Description" @bind="newExerciseDescription"></textarea>
+    <input placeholder="Exercise name" @bind="personalName"/>
+    <textarea placeholder="Description" @bind="personalDescription"></textarea>
 
     <br /><br />
     <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
@@ -89,8 +89,12 @@ else
     List<Exercise> globalExercises = new();
     List<Exercise> myExercises = new();
 
-    string newExerciseName = "";
-    string newExerciseDescription = "";
+    string globalName = "";
+    string globalDescription = "";
+
+    string personalName = "";
+    string personalDescription = "";
+
     string message = "";
 
     ApplicationUser? user;
@@ -123,13 +127,13 @@ else
     {
         if (!isAdmin) return;
 
-        if (string.IsNullOrWhiteSpace(newExerciseName))
+        if (string.IsNullOrWhiteSpace(globalName))
         {
             message = "Name required";
             return;
         }
 
-        var exists = await db.Exercises.AnyAsync(e => e.Name.ToLower() == newExerciseName.ToLower());
+        var exists = await db.Exercises.AnyAsync(e => e.Name.ToLower() == globalName.ToLower());
         if (exists)
         {
             message = "Exercise already exists";
@@ -138,15 +142,15 @@ else
 
         db.Exercises.Add(new Exercise
         {
-            Name = newExerciseName.Trim(),
-            Description = newExerciseDescription,
+            Name = globalName.Trim(),
+            Description = globalDescription,
             IsGlobal = true
         });
 
         await db.SaveChangesAsync();
 
-        newExerciseName = "";
-        newExerciseDescription = "";
+        globalName = "";
+        globalDescription = "";
         message = "Global exercise created";
 
         await LoadExercises();
@@ -154,7 +158,7 @@ else
 
     async Task CreatePersonalExercise()
     {
-        if (string.IsNullOrWhiteSpace(newExerciseName))
+        if (string.IsNullOrWhiteSpace(personalName))
         {
             message = "Name required";
             return;
@@ -162,16 +166,16 @@ else
 
         db.Exercises.Add(new Exercise
         {
-            Name = newExerciseName.Trim(),
-            Description = newExerciseDescription,
+            Name = personalName.Trim(),
+            Description = personalDescription,
             OwnerId = user!.Id,
             IsGlobal = false
         });
 
         await db.SaveChangesAsync();
 
-        newExerciseName = "";
-        newExerciseDescription = "";
+        personalName = "";
+        personalDescription = "";
         message = "Personal exercise created";
 
         await LoadExercises();

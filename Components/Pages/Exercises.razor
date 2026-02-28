@@ -15,109 +15,199 @@
 
 <h1>Exercise library</h1>
 
-<section style="margin-bottom:30px; border:1px solid #ccc; padding:20px; border-radius:12px;">
-    <h3>Add new exercise</h3>
+@if (isAdmin)
+{
+    <section class="card">
+        <h3>Create GLOBAL exercise (admin)</h3>
+
+        <input placeholder="Exercise name" @bind="newExerciseName"/>
+        <textarea placeholder="Description" @bind="newExerciseDescription"></textarea>
+
+        <br /><br />
+        <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
+    </section>
+}
+
+<section class="card">
+    <h3>Create personal exercise</h3>
 
     <input placeholder="Exercise name" @bind="newExerciseName"/>
-
-    <textarea placeholder="Description (optional)" @bind="newExerciseDescription"></textarea>
+    <textarea placeholder="Description" @bind="newExerciseDescription"></textarea>
 
     <br /><br />
-
-    <button class="add-btn" @onclick="CreateExercise">Add exercise</button>
+    <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
 
     @if (!string.IsNullOrEmpty(message))
     {
-        <p style="color:green;">@message</p>
+        <p style="color:lightgreen">@message</p>
     }
 </section>
 
-<h3>All exercises</h3>
+<h3>Global exercises</h3>
 
-@if (exercises == null)
+@if (!globalExercises.Any())
 {
-    <p>Loading...</p>
-}
-else if (!exercises.Any())
-{
-    <p>No exercises created yet.</p>
+    <p>No global exercises</p>
 }
 else
 {
     <ul>
-        @foreach (var ex in exercises)
+        @foreach (var ex in globalExercises)
         {
             <li>
                 <b>@ex.Name</b>
-                @if (!string.IsNullOrWhiteSpace(ex.Description))
-                {
-                    <span> — @ex.Description</span>
-                }
 
-                <button class="undo-btn"@onclick="() => DeleteExercise(ex.Id)">Delete</button>
+                @if (isAdmin)
+                {
+                    <button class="undo-btn" @onclick="() => DeleteGlobal(ex.Id)">Delete</button>
+                }
+            </li>
+        }
+    </ul>
+}
+
+<h3>My exercises</h3>
+
+@if (!myExercises.Any())
+{
+    <p>No personal exercises</p>
+}
+else
+{
+    <ul>
+        @foreach (var ex in myExercises)
+        {
+            <li>
+                <b>@ex.Name</b>
+                <button class="undo-btn" @onclick="() => DeletePersonal(ex.Id)">Delete</button>
             </li>
         }
     </ul>
 }
 
 @code {
-    List<Exercise>? exercises;
+    List<Exercise> globalExercises = new();
+    List<Exercise> myExercises = new();
 
     string newExerciseName = "";
     string newExerciseDescription = "";
     string message = "";
 
+    ApplicationUser? user;
+    bool isAdmin = false;
+
     protected override async Task OnInitializedAsync()
     {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        user = await userManager.GetUserAsync(auth.User);
+
+        isAdmin = await userManager.IsInRoleAsync(user!, "Admin");
+
         await LoadExercises();
     }
 
     async Task LoadExercises()
     {
-        exercises = await db.Exercises
+        globalExercises = await db.Exercises
+            .Where(e => e.IsGlobal)
+            .OrderBy(e => e.Name)
+            .ToListAsync();
+
+        myExercises = await db.Exercises
+            .Where(e => !e.IsGlobal && e.OwnerId == user!.Id)
             .OrderBy(e => e.Name)
             .ToListAsync();
     }
 
-    async Task CreateExercise()
+    async Task CreateGlobalExercise()
     {
-        message = "";
+        if (!isAdmin) return;
 
         if (string.IsNullOrWhiteSpace(newExerciseName))
         {
-            message = "Exercise name required";
+            message = "Name required";
             return;
         }
 
-        var exists = await db.Exercises
-            .AnyAsync(e => e.Name.ToLower() == newExerciseName.ToLower());
-
+        var exists = await db.Exercises.AnyAsync(e => e.Name.ToLower() == newExerciseName.ToLower());
         if (exists)
         {
             message = "Exercise already exists";
             return;
         }
 
-        var exercise = new Exercise
+        db.Exercises.Add(new Exercise
         {
             Name = newExerciseName.Trim(),
-            Description = newExerciseDescription
-        };
+            Description = newExerciseDescription,
+            IsGlobal = true
+        });
 
-        db.Exercises.Add(exercise);
         await db.SaveChangesAsync();
 
         newExerciseName = "";
         newExerciseDescription = "";
-        message = "Exercise added";
+        message = "Global exercise created";
 
         await LoadExercises();
     }
 
-    async Task DeleteExercise(int id)
+    async Task CreatePersonalExercise()
     {
-        var ex = await db.Exercises.FindAsync(id);
+        if (string.IsNullOrWhiteSpace(newExerciseName))
+        {
+            message = "Name required";
+            return;
+        }
+
+        db.Exercises.Add(new Exercise
+        {
+            Name = newExerciseName.Trim(),
+            Description = newExerciseDescription,
+            OwnerId = user!.Id,
+            IsGlobal = false
+        });
+
+        await db.SaveChangesAsync();
+
+        newExerciseName = "";
+        newExerciseDescription = "";
+        message = "Personal exercise created";
+
+        await LoadExercises();
+    }
+
+    async Task DeleteGlobal(int id)
+    {
+        if (!isAdmin) return;
+
+        var used = await db.WorkoutExercises.AnyAsync(w => w.ExerciseId == id);
+        if (used)
+        {
+            message = "Cannot delete. Used in workouts.";
+            return;
+        }
+
+        var ex = await db.Exercises.FirstOrDefaultAsync(e => e.Id == id && e.IsGlobal);
         if (ex == null) return;
+
+        db.Exercises.Remove(ex);
+        await db.SaveChangesAsync();
+
+        await LoadExercises();
+    }
+
+    async Task DeletePersonal(int id)
+    {
+        var ex = await db.Exercises.FirstOrDefaultAsync(e => e.Id == id && e.OwnerId == user!.Id);
+        if (ex == null) return;
+
+        var used = await db.WorkoutExercises.AnyAsync(w => w.ExerciseId == id);
+        if (used)
+        {
+            message = "Cannot delete. Used in workouts.";
+            return;
+        }
 
         db.Exercises.Remove(ex);
         await db.SaveChangesAsync();

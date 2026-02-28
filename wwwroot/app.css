@@ -26,3 +26,62 @@ button.undo-btn {
     background-color: #B43F3F;
     color: #F8EDED;
 }
+
+/* HEL SIDA */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0f2027;
+    background: linear-gradient(135deg, #0f2027, #173B45);
+    padding: 40px 20px;
+}
+
+/* LOGIN CARD */
+.auth-card {
+    background: #173B45;
+    padding: 45px 40px;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    color: white;
+}
+
+/* TITEL */
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #FF8225;
+}
+
+/* LABELS */
+.auth-card label {
+    color: #ccc;
+}
+
+.remember {
+    margin: 1em 0em;
+}
+
+.auth-card input {
+    border-radius: 10px;
+    padding: 0.8em;
+    margin-left: 1em;
+}
+
+.auth-links {
+    display: flex;
+    flex-direction: column;
+}
+
+/* LINKS */
+.auth-card a {
+    color: #FF8225;
+    text-decoration: none;
+}
+
+.auth-card a:hover {
+    text-decoration: underline;
+}

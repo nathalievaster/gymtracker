@@ -42,6 +42,8 @@
     border-radius: 8px;
     text-decoration: none;
     cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 1em;
 }
 
 .side-menu {

@@ -16,6 +16,7 @@ button {
     border: none;
     font-size: 1em;
     margin-bottom: 1em;
+    cursor: pointer;
 }
 
 button.add-btn {
@@ -95,4 +96,5 @@ textarea {
     font-size: 1em;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0.5em;
+    border: none;
 }

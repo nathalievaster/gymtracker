@@ -34,8 +34,9 @@
         </div>
     </div>
 }
-
-<button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
+<div class="buttondiv">
+    <button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
+</div>
 
 @if (workouts == null)
 {
@@ -55,7 +56,15 @@ else
                     <b>@w.Title</b> (@w.Date.ToShortDateString())
                 </a>
 
-                <button class="undo-btn" @onclick="() => DeleteWorkout(w.Id)">Delete</button>
+                <div class="actions">
+                    <button class="add-btn small" @onclick="() => GoToWorkout(w.Id)">
+                        Add exercises
+                    </button>
+
+                    <button class="undo-btn" @onclick="() => DeleteWorkout(w.Id)">
+                        Delete
+                    </button>
+                </div>
             </li>
         }
     </ul>
@@ -96,6 +105,11 @@ else
     {
         nav.NavigateTo($"/workout/{created}");
     }
+
+    void GoToWorkout(int id)
+{
+    nav.NavigateTo($"/workout/{id}");
+}
 
     void CloseModal()
     {

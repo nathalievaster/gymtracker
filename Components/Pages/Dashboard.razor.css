@@ -38,3 +38,67 @@
         opacity: 1;
     }
 }
+
+h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Create workout button */
+.buttondiv {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Workout list */
+ul {
+    list-style: none;
+    padding: 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Workout row */
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.7rem;
+    background: #173B45;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+/* Workout link */
+li a {
+    text-decoration: none;
+    color: #FF8225;
+    font-weight: 500;
+}
+
+li a:hover {
+    text-decoration: underline;
+}
+
+/* Title inside row */
+li b {
+    font-weight: 600;
+}
+
+/* Delete button spacing */
+.undo-btn {
+    margin-left: 1rem;
+}
+
+/* Empty state text */
+p {
+    text-align: center;
+    color: #666;
+}
+
+/* Loading text */
+p:first-of-type {
+    margin-top: 1rem;
+}

@@ -34,7 +34,6 @@
     <input placeholder="Exercise name" @bind="personalName"/>
     <textarea placeholder="Description" @bind="personalDescription"></textarea>
 
-    <br /><br />
     <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
 
     @if (!string.IsNullOrEmpty(message))

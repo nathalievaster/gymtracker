@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -45,7 +46,7 @@ button.undo-btn {
     border-radius: 18px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     color: white;
 }
 
@@ -85,4 +86,13 @@ button.undo-btn {
 
 .auth-card a:hover {
     text-decoration: underline;
+}
+
+input,
+textarea {
+    border-radius: 10px;
+    padding: 0.5em;
+    font-size: 1em;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0.5em;
 }

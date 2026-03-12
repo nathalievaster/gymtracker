@@ -15,109 +15,181 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager nav
 
-<h2>Workout</h2>
-
 @if (workout == null)
 {
     <p>Loading...</p>
 }
 else
 {
-    <h3>@workout.Title</h3>
-    <p>@workout.Date.ToShortDateString()</p>
-    <p>@workout.Notes</p>
+    <div class="workout-header">
 
-    <button class="add-btn" @onclick="OpenExerciseModal">Add exercise</button>
+        <h2>@workout.Title</h2>
 
-    <h4>Exercises</h4>
+        <div class="workout-meta">
+            <span>@workout.Date.ToShortDateString()</span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(workout.Notes))
+        {
+            <p class="notes">Notes: @workout.Notes</p>
+        }
+
+        <div class="workout-stats">
+            <span>@workout.WorkoutExercises.Count exercises</span>
+            <span>@workout.WorkoutExercises.SelectMany(x => x.Sets).Count() sets</span>
+        </div>
+
+        <button class="add-btn big" @onclick="OpenExerciseModal">
+            Add exercise
+        </button>
+
+    </div>
+
+
+    <h4 class="section-title">Exercises</h4>
 
     @if (!workout.WorkoutExercises.Any())
     {
-        <p>No exercises yet</p>
+        <p class="empty">No exercises yet</p>
     }
     else
     {
         @foreach (var we in workout.WorkoutExercises)
         {
-            <article>
+            <div class="exercise-card">
 
-                <h5>@we.Exercise?.Name</h5>
+                <div class="exercise-header">
+                    <h5>@we.Exercise?.Name</h5>
 
-                @* LISTA SETS *@
+                    <button class="undo-btn small"
+                            @onclick="() => DeleteExercise(we.Id)">
+                        Delete
+                    </button>
+                </div>
+
+
                 @if (!we.Sets.Any())
                 {
-                    <p>No sets yet</p>
+                    <p class="empty">No sets yet</p>
                 }
                 else
                 {
-                    <ul>
-                        @foreach (var s in we.Sets)
-                        {
-                            <li>@s.Reps reps - @s.Weight kg</li>
-                        }
-                    </ul>
+                    <table class="sets-table">
+
+                        <thead>
+                            <tr>
+                                <th>Set</th>
+                                <th>Reps</th>
+                                <th>Weight</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @{
+                                int index = 1;
+                            }
+
+                            @foreach (var s in we.Sets)
+                            {
+                                <tr>
+                                    <td>@index</td>
+                                    <td>@s.Reps</td>
+                                    <td>@s.Weight kg</td>
+                                </tr>
+
+                                index++;
+                            }
+                        </tbody>
+
+                    </table>
                 }
 
-                @* ADD SET *@
+
                 @if (activeSetExerciseId == we.Id)
                 {
-                    <div style="margin-top:10px;">
-                        <label for="reps">Reps</label>
-                        <input name="reps" type="number" @bind="newReps" />
+                    <div class="add-set-row">
 
-                        <label for="weight">Weight</label>
-                        <input name="weight" type="number" @bind="newWeight" />
+                        <input type="number"
+                               placeholder="Reps"
+                               @bind="newReps" />
 
-                        <button class="add-btn" @onclick="() => SaveSet(we.Id)">Save</button>
-                        <button class="undo-btn" @onclick="CancelSet">Cancel</button>
+                        <input type="number"
+                               placeholder="Weight"
+                               @bind="newWeight" />
+
+                        <button class="add-btn small"
+                                @onclick="() => SaveSet(we.Id)">
+                            Save
+                        </button>
+
+                        <button class="undo-btn small"
+                                @onclick="CancelSet">
+                            Cancel
+                        </button>
+
                     </div>
                 }
                 else
                 {
-                    <button class="add-btn" @onclick="() => StartAddSet(we.Id)">Add set</button>
+                    <button class="add-btn small"
+                            @onclick="() => StartAddSet(we.Id)">
+                        Add set
+                    </button>
                 }
-                <br />
-                <button class="undo-btn" @onclick="() => DeleteExercise(we.Id)">Delete exercise</button>
 
-            </article>
+            </div>
         }
     }
 
-    <br />
-    <button class="undo-btn" @onclick="GoBack">Back</button>
+    <button class="undo-btn back-btn" @onclick="GoBack">Back</button>
 }
+
 
 @if (showExerciseModal)
 {
     <div class="modal-backdrop">
+
         <div class="modal-box">
 
             <h3>Add exercise</h3>
 
             <select @bind="selectedExerciseId">
+
                 <option value="0">Select exercise</option>
+
                 @foreach (var ex in allExercises)
                 {
                     <option value="@ex.Id">@ex.Name</option>
                 }
+
             </select>
 
             <br /><br />
 
             <b>or create new</b>
 
-            <InputText @bind-Value="newExerciseName" placeholder="Exercise name" />
+            <InputText @bind-Value="newExerciseName"
+                       placeholder="Exercise name" />
 
             <br /><br />
 
-            <button class="add-btn" @onclick="AddExerciseToWorkout">Add</button>
-            <button class="undo-btn" @onclick="CloseExerciseModal">Cancel</button>
+            <button class="add-btn"
+                    @onclick="AddExerciseToWorkout">
+                Add
+            </button>
+
+            <button class="undo-btn"
+                    @onclick="CloseExerciseModal">
+                Cancel
+            </button>
 
         </div>
+
     </div>
 }
 
 @code {
+
     List<Exercise> allExercises = new();
 
     int selectedExerciseId = 0;
@@ -132,6 +204,7 @@ else
     int activeSetExerciseId = 0;
     int newReps = 0;
     double newWeight = 0;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,13 +224,27 @@ else
             return;
         }
 
-        allExercises = db.Exercises.OrderBy(e => e.Name).ToList();
+        allExercises = db.Exercises
+            .OrderBy(e => e.Name)
+            .ToList();
     }
 
-    void GoBack() => nav.NavigateTo("/dashboard");
 
-    void OpenExerciseModal() => showExerciseModal = true;
-    void CloseExerciseModal() => showExerciseModal = false;
+    void GoBack()
+    {
+        nav.NavigateTo("/dashboard");
+    }
+
+    void OpenExerciseModal()
+    {
+        showExerciseModal = true;
+    }
+
+    void CloseExerciseModal()
+    {
+        showExerciseModal = false;
+    }
+
 
     async Task AddExerciseToWorkout()
     {
@@ -169,7 +256,9 @@ else
         if (!string.IsNullOrWhiteSpace(newExerciseName))
         {
             exercise = new Exercise { Name = newExerciseName };
+
             db.Exercises.Add(exercise);
+
             await db.SaveChangesAsync();
         }
 
@@ -182,14 +271,17 @@ else
         };
 
         db.WorkoutExercises.Add(workoutExercise);
+
         await db.SaveChangesAsync();
 
         await ReloadWorkout();
 
         showExerciseModal = false;
+
         newExerciseName = "";
         selectedExerciseId = 0;
     }
+
 
     async Task DeleteExercise(int workoutExerciseId)
     {
@@ -206,14 +298,21 @@ else
         await ReloadWorkout();
     }
 
+
     void StartAddSet(int workoutExerciseId)
     {
         activeSetExerciseId = workoutExerciseId;
+
         newReps = 0;
         newWeight = 0;
     }
 
-    void CancelSet() => activeSetExerciseId = 0;
+
+    void CancelSet()
+    {
+        activeSetExerciseId = 0;
+    }
+
 
     async Task SaveSet(int workoutExerciseId)
     {
@@ -227,11 +326,14 @@ else
         };
 
         db.Sets.Add(set);
+
         await db.SaveChangesAsync();
 
         activeSetExerciseId = 0;
+
         await ReloadWorkout();
     }
+
 
     async Task ReloadWorkout()
     {
@@ -244,4 +346,5 @@ else
 
         await InvokeAsync(StateHasChanged);
     }
+
 }

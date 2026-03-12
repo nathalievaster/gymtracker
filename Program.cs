@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using GymTracker.Components;
 using GymTracker.Components.Account;
 using GymTracker.Data;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -67,18 +69,28 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // skapa Admin roll om den inte finns
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 
-    // om ingen admin finns → gör första user till admin
-    var admins = await userManager.GetUsersInRoleAsync("Admin");
+    var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+    var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
-    if (!admins.Any())
+    if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
     {
-        var firstUser = userManager.Users.FirstOrDefault();
-        if (firstUser != null)
-            await userManager.AddToRoleAsync(firstUser, "Admin");
+        var admin = await userManager.FindByEmailAsync(adminEmail);
+
+        if (admin == null)
+        {
+            admin = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            await userManager.CreateAsync(admin, adminPassword);
+            await userManager.AddToRoleAsync(admin, "Admin");
+        }
     }
 }
 

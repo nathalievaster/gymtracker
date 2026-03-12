@@ -20,26 +20,31 @@
     <section class="card">
         <h3>Create GLOBAL exercise (admin)</h3>
 
-        <input placeholder="Exercise name" @bind="globalName"/>
+        <input placeholder="Exercise name" @bind="globalName" />
         <textarea placeholder="Description" @bind="globalDescription"></textarea>
 
         <br /><br />
         <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
+
+        @if (!string.IsNullOrEmpty(globalMessage))
+{
+    <p class="message">@globalMessage</p>
+}
     </section>
 }
 
 <section class="card">
     <h3>Create personal exercise</h3>
 
-    <input placeholder="Exercise name" @bind="personalName"/>
+    <input placeholder="Exercise name" @bind="personalName" />
     <textarea placeholder="Description" @bind="personalDescription"></textarea>
 
     <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
 
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <p style="color:lightgreen">@message</p>
-    }
+   @if (!string.IsNullOrEmpty(personalMessage))
+{
+    <p class="message">@personalMessage</p>
+}
 </section>
 
 <h3>Global exercises</h3>
@@ -94,7 +99,9 @@ else
     string personalName = "";
     string personalDescription = "";
 
-    string message = "";
+    // Variabler för meddelanden på olika kort
+    string personalMessage = "";
+    string globalMessage = "";
 
     ApplicationUser? user;
     bool isAdmin = false;
@@ -128,14 +135,14 @@ else
 
         if (string.IsNullOrWhiteSpace(globalName))
         {
-            message = "Name required";
+            globalMessage= "Name required";
             return;
         }
 
         var exists = await db.Exercises.AnyAsync(e => e.Name.ToLower() == globalName.ToLower());
         if (exists)
         {
-            message = "Exercise already exists";
+            globalMessage = "Exercise already exists";
             return;
         }
 
@@ -150,7 +157,7 @@ else
 
         globalName = "";
         globalDescription = "";
-        message = "Global exercise created";
+        globalMessage = "Global exercise created";
 
         await LoadExercises();
     }
@@ -159,7 +166,7 @@ else
     {
         if (string.IsNullOrWhiteSpace(personalName))
         {
-            message = "Name required";
+            personalMessage = "Name required";
             return;
         }
 
@@ -175,7 +182,7 @@ else
 
         personalName = "";
         personalDescription = "";
-        message = "Personal exercise created";
+        personalMessage = "Personal exercise created";
 
         await LoadExercises();
     }
@@ -187,7 +194,7 @@ else
         var used = await db.WorkoutExercises.AnyAsync(w => w.ExerciseId == id);
         if (used)
         {
-            message = "Cannot delete. Used in workouts.";
+            personalMessage = "Cannot delete. Used in workouts.";
             return;
         }
 
@@ -208,7 +215,7 @@ else
         var used = await db.WorkoutExercises.AnyAsync(w => w.ExerciseId == id);
         if (used)
         {
-            message = "Cannot delete. Used in workouts.";
+            personalMessage = "Cannot delete. Used in workouts.";
             return;
         }
 

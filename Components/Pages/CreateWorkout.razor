@@ -15,30 +15,31 @@
 @inject NavigationManager nav
 
 <h1>Create workout</h1>
+<section class="card">
+    <EditForm Model="model" OnValidSubmit="SaveWorkout">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-<EditForm Model="model" OnValidSubmit="SaveWorkout">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <div class="form-group">
+            <label>Title</label>
+            <InputText         @bind-Value="model.Title"        placeholder="Leg day, Upper body, Morning run..." />
+        </div>
 
-    <div>
-        <label>Title</label>
-        <InputText @bind-Value="model.Title" />
-    </div>
+        <div class="form-group">
+            <label>Date</label>
+            <InputDate         @bind-Value="model.Date"        placeholder="Select workout date" />
+        </div>
 
-    <div>
-        <label>Date</label>
-        <InputDate @bind-Value="model.Date" />
-    </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <InputTextArea         @bind-Value="model.Notes"
+                                   placeholder="How did the workout feel?" />
+        </div>
 
-    <div>
-        <label>Notes</label>
-        <InputTextArea @bind-Value="model.Notes" />
-    </div>
-
-    <br />
-    <button type="submit">Save</button>
-</EditForm>
-
+        <br />
+        <button class="add-btn" type="submit">Save</button>
+    </EditForm>
+</section>
 @code {
     WorkoutSession model = new()
     {

@@ -1,11 +1,20 @@
 @rendermode InteractiveServer
 <NavMenu />
 
-<header class="hero-header">
+<header class="@HeaderClass">
 
     <div class="hero-content">
         <h1>GYMTRACKER</h1>
-        <p>- Track your overload</p>
+        <p class="tagline">Track your overload</p>
     </div>
 
 </header>
+
+@code {
+    [Inject] NavigationManager nav { get; set; } = default!;
+
+    string HeaderClass =>
+        nav.Uri.EndsWith("/")
+        ? "hero-header"
+        : "normal-header";
+}

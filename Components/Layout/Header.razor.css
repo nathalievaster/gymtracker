@@ -7,6 +7,27 @@
     overflow: hidden;
 }
 
+.normal-header {
+    background: #173B45;
+    padding: 20px;
+    color: #ff8225;
+}
+.hero-content h1 {
+    font-size: 6em;
+}
+
+.hero-content p {
+    font-size: 2.5em;
+    margin-top: 0;
+}
+.normal-header h1 {
+    font-size: 3em;
+}
+
+.normal-header p {
+    font-size: 1.5em;
+}
+
 .hero-header::before {
     content: "";
     position: absolute;
@@ -25,14 +46,7 @@
     align-items: center;
 }
 
-.hero-content h1 {
-    font-size: 6em;
-}
 
-.hero-content p {
-    font-size: 2.5em;
-    margin-top: 0;
-}
 
 @media screen and (max-width: 690px) {
     .hero-content h1 {
@@ -50,4 +64,19 @@
     .hero-content p {
         font-size: 1.3em;
     }
+}
+
+.tagline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.tagline::before,
+.tagline::after {
+    content: "";
+    height: 2px;
+    width: 80px;
+    background: #ff8225;
 }

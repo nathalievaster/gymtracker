@@ -21,6 +21,12 @@
 }
 else
 {
+    <div class="workout-top">
+
+        <button class="undo-btn back-btn" @onclick="GoBack">Back</button>
+
+    </div>
+
     <div class="workout-header">
 
         <h2>@workout.Title</h2>
@@ -46,6 +52,7 @@ else
     </div>
 
 
+
     <h4 class="section-title">Exercises</h4>
 
     @if (!workout.WorkoutExercises.Any())
@@ -61,8 +68,7 @@ else
                 <div class="exercise-header">
                     <h5>@we.Exercise?.Name</h5>
 
-                    <button class="undo-btn small"
-                            @onclick="() => DeleteExercise(we.Id)">
+                    <button class="undo-btn small" @onclick="() => DeleteExercise(we.Id)">
                         Delete
                     </button>
                 </div>
@@ -79,7 +85,7 @@ else
                         <thead>
                             <tr>
                                 <th>Set</th>
-                                <th>Reps</th>
+                                <th>Repetitions</th>
                                 <th>Weight</th>
                             </tr>
                         </thead>
@@ -92,7 +98,7 @@ else
                             @foreach (var s in we.Sets)
                             {
                                 <tr>
-                                    <td>@index</td>
+                                    <td>#@index</td>
                                     <td>@s.Reps</td>
                                     <td>@s.Weight kg</td>
                                 </tr>
@@ -109,21 +115,15 @@ else
                 {
                     <div class="add-set-row">
 
-                        <input type="number"
-                               placeholder="Reps"
-                               @bind="newReps" />
+                        <input type="number" placeholder="Reps" @bind="newReps" />
 
-                        <input type="number"
-                               placeholder="Weight"
-                               @bind="newWeight" />
+                        <input type="number" placeholder="Weight" @bind="newWeight" />
 
-                        <button class="add-btn small"
-                                @onclick="() => SaveSet(we.Id)">
+                        <button class="add-btn small" @onclick="() => SaveSet(we.Id)">
                             Save
                         </button>
 
-                        <button class="undo-btn small"
-                                @onclick="CancelSet">
+                        <button class="undo-btn small" @onclick="CancelSet">
                             Cancel
                         </button>
 
@@ -131,8 +131,7 @@ else
                 }
                 else
                 {
-                    <button class="add-btn small"
-                            @onclick="() => StartAddSet(we.Id)">
+                    <button class="add-btn small" @onclick="() => StartAddSet(we.Id)">
                         Add set
                     </button>
                 }
@@ -140,8 +139,6 @@ else
             </div>
         }
     }
-
-    <button class="undo-btn back-btn" @onclick="GoBack">Back</button>
 }
 
 
@@ -168,18 +165,15 @@ else
 
             <b>or create new</b>
 
-            <InputText @bind-Value="newExerciseName"
-                       placeholder="Exercise name" />
+            <InputText @bind-Value="newExerciseName" placeholder="Exercise name" />
 
             <br /><br />
 
-            <button class="add-btn"
-                    @onclick="AddExerciseToWorkout">
+            <button class="add-btn" @onclick="AddExerciseToWorkout">
                 Add
             </button>
 
-            <button class="undo-btn"
-                    @onclick="CloseExerciseModal">
+            <button class="undo-btn" @onclick="CloseExerciseModal">
                 Cancel
             </button>
 

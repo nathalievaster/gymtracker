@@ -11,10 +11,31 @@
 </header>
 
 @code {
+
     [Inject] NavigationManager nav { get; set; } = default!;
 
-    string HeaderClass =>
-        nav.Uri.EndsWith("/")
-        ? "hero-header"
-        : "normal-header";
+    string HeaderClass = "normal-header";
+
+    protected override void OnInitialized()
+    {
+        UpdateHeader();
+        nav.LocationChanged += OnLocationChanged;
+    }
+
+    void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateHeader();
+        InvokeAsync(StateHasChanged);
+    }
+
+    void UpdateHeader()
+    {
+        var uri = new Uri(nav.Uri);
+        HeaderClass = uri.AbsolutePath == "/" ? "hero-header" : "normal-header";
+    }
+
+    public void Dispose()
+    {
+        nav.LocationChanged -= OnLocationChanged;
+    }
 }

@@ -57,6 +57,6 @@
         db.WorkoutSessions.Add(model);
         await db.SaveChangesAsync();
 
-        nav.NavigateTo("/dashboard");
+        nav.NavigateTo($"/dashboard?created={model.Id}");
     }
 }

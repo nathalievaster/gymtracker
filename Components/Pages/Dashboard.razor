@@ -1,7 +1,5 @@
-@*Url till sidan*@
 @page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
-@*Sidan kräver inloggning*@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
@@ -9,16 +7,36 @@
 @using GymTracker.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthStateProvider
+@using Microsoft.AspNetCore.Components
 @using System.Linq
+
+@inject AuthenticationStateProvider AuthStateProvider
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
-
 @inject NavigationManager nav
 
 <h1>My workouts</h1>
 
+@if (showModal && created.HasValue)
+{
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2> Workout created!</h2>
+            <p>Great job! Let's add some exercises and reps.</p>
+
+            <button class="add-btn" @onclick="GoToWorkout">
+                Add exercises
+            </button>
+
+            <button class="undo-btn" @onclick="CloseModal">
+                Maybe later
+            </button>
+        </div>
+    </div>
+}
+
 <button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
+
 @if (workouts == null)
 {
     <p>Loading workouts...</p>
@@ -44,6 +62,13 @@ else
 }
 
 @code {
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? created { get; set; }
+
+    bool showModal = false;
+
     List<WorkoutSession>? workouts;
 
     protected override async Task OnInitializedAsync()
@@ -55,12 +80,26 @@ else
             .Where(w => w.UserId == user!.Id)
             .OrderByDescending(w => w.Date)
             .ToList();
+
+        if (created.HasValue)
+        {
+            showModal = true;
+        }
     }
 
     void GoCreate()
     {
-        Console.WriteLine("CLICKED");
         nav.NavigateTo("/create-workout");
+    }
+
+    void GoToWorkout()
+    {
+        nav.NavigateTo($"/workout/{created}");
+    }
+
+    void CloseModal()
+    {
+        showModal = false;
     }
 
     async Task DeleteWorkout(int id)

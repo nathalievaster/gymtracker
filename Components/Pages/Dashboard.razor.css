@@ -102,3 +102,26 @@ p {
 p:first-of-type {
     margin-top: 1rem;
 }
+
+.stats-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:20px;
+max-width:900px;
+margin:2rem auto;
+}
+
+.stat-card{
+background:#173B45;
+padding:1.5rem;
+border-radius:14px;
+text-align:center;
+color:white;
+box-shadow:0 6px 18px rgba(0,0,0,0.1);
+}
+
+.stat-card h3{
+color:#FF8225;
+font-size:1.8rem;
+margin-bottom:0.3rem;
+}

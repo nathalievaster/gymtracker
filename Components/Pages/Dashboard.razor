@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.EntityFrameworkCore
 @using System.Linq
 
 @inject AuthenticationStateProvider AuthStateProvider
@@ -21,7 +22,7 @@
 {
     <div class="modal-overlay">
         <div class="modal">
-            <h2> Workout created!</h2>
+            <h2>Workout created!</h2>
             <p>Great job! Let's add some exercises and reps.</p>
 
             <button class="add-btn" @onclick="GoToWorkout">
@@ -34,6 +35,39 @@
         </div>
     </div>
 }
+
+@if (workouts != null)
+{
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <h3>@totalWorkouts</h3>
+            <p>Workouts</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>@totalExercises</h3>
+            <p>Exercises</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>@totalSets</h3>
+            <p>Sets logged</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>@totalVolume</h3>
+            <p>Total volume</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>@weeklyFrequency.ToString("0.0")</h3>
+            <p>Workouts / week</p>
+        </div>
+
+    </div>
+}
+
 <div class="buttondiv">
     <button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
 </div>
@@ -79,6 +113,12 @@ else
     bool showModal = false;
 
     List<WorkoutSession>? workouts;
+    // Variabler för statistik
+    int totalWorkouts;
+    int totalExercises;
+    int totalSets;
+    double totalVolume;
+    double weeklyFrequency;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,6 +129,38 @@ else
             .Where(w => w.UserId == user!.Id)
             .OrderByDescending(w => w.Date)
             .ToList();
+
+        var sets = db.Sets
+            .Include(s => s.WorkoutExercise)
+            .ThenInclude(we => we.WorkoutSession)
+            .Where(s => s.WorkoutExercise.WorkoutSession.UserId == user.Id)
+            .ToList();
+
+
+        if (workouts.Any())
+        {
+            var firstWorkout = workouts.Min(w => w.Date);
+            var lastWorkout = workouts.Max(w => w.Date);
+
+            var totalDays = (lastWorkout - firstWorkout).TotalDays;
+
+            var weeks = totalDays / 7;
+
+            if (weeks < 1) weeks = 1;
+
+            weeklyFrequency = workouts.Count / weeks;
+        }
+
+        totalSets = sets.Count;
+
+        totalVolume = sets.Sum(s => s.Reps * s.Weight);
+
+        totalWorkouts = workouts.Count;
+
+        totalExercises = db.WorkoutExercises
+            .Include(we => we.WorkoutSession)
+            .Where(we => we.WorkoutSession.UserId == user.Id)
+            .Count();
 
         if (created.HasValue)
         {
@@ -107,9 +179,9 @@ else
     }
 
     void GoToWorkout(int id)
-{
-    nav.NavigateTo($"/workout/{id}");
-}
+    {
+        nav.NavigateTo($"/workout/{id}");
+    }
 
     void CloseModal()
     {
@@ -119,6 +191,7 @@ else
     async Task DeleteWorkout(int id)
     {
         var workout = db.WorkoutSessions.FirstOrDefault(x => x.Id == id);
+
         if (workout != null)
         {
             db.WorkoutSessions.Remove(workout);
@@ -133,4 +206,5 @@ else
             .OrderByDescending(w => w.Date)
             .ToList();
     }
+
 }

@@ -10,11 +10,13 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.EntityFrameworkCore
 @using System.Linq
+@using System.Globalization
 
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
 @inject NavigationManager nav
+@inject IJSRuntime JS
 
 <h1>My workouts</h1>
 
@@ -38,6 +40,7 @@
 
 @if (workouts != null)
 {
+    <!-- Statistik -->
     <div class="stats-grid">
 
         <div class="stat-card">
@@ -71,6 +74,18 @@
 <div class="buttondiv">
     <button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
 </div>
+
+@if (workouts != null && workouts.Any())
+{
+    <!-- Graf: antal pass per vecka -->
+    <div class="chart-card">
+
+        <h3>Workouts per week</h3>
+
+        <canvas id="progressChart"></canvas>
+
+    </div>
+}
 
 @if (workouts == null)
 {
@@ -113,12 +128,17 @@ else
     bool showModal = false;
 
     List<WorkoutSession>? workouts;
-    // Variabler för statistik
+
     int totalWorkouts;
     int totalExercises;
     int totalSets;
     double totalVolume;
     double weeklyFrequency;
+
+    List<string> chartLabels = new();
+    List<double> chartData = new();
+
+    bool chartRendered = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,25 +156,28 @@ else
             .Where(s => s.WorkoutExercise.WorkoutSession.UserId == user.Id)
             .ToList();
 
+        // Grupp för grafen: antal workouts per vecka
+        var weeklyWorkouts = workouts
+            .GroupBy(w =>
+            {
+                return new
+                {
+                    Year = w.Date.Year,
+                    Week = ISOWeek.GetWeekOfYear(w.Date)
+                };
+            })
+            .OrderBy(g => g.Key.Year)
+            .ThenBy(g => g.Key.Week);
 
-        if (workouts.Any())
+        foreach (var g in weeklyWorkouts)
         {
-            var firstWorkout = workouts.Min(w => w.Date);
-            var lastWorkout = workouts.Max(w => w.Date);
-
-            var totalDays = (lastWorkout - firstWorkout).TotalDays;
-
-            var weeks = totalDays / 7;
-
-            if (weeks < 1) weeks = 1;
-
-            weeklyFrequency = workouts.Count / weeks;
+            chartLabels.Add($"W{g.Key.Week} {g.Key.Year}");
+            chartData.Add(g.Count());
         }
 
+        // Statistik
         totalSets = sets.Count;
-
         totalVolume = sets.Sum(s => s.Reps * s.Weight);
-
         totalWorkouts = workouts.Count;
 
         totalExercises = db.WorkoutExercises
@@ -162,10 +185,21 @@ else
             .Where(we => we.WorkoutSession.UserId == user.Id)
             .Count();
 
-        if (created.HasValue)
+        if (workouts.Any())
         {
-            showModal = true;
+            var firstWorkout = workouts.Min(w => w.Date);
+            var lastWorkout = workouts.Max(w => w.Date);
+
+            var totalDays = (lastWorkout - firstWorkout).TotalDays;
+            var weeks = totalDays / 7;
+
+            if (weeks < 1) weeks = 1;
+
+            weeklyFrequency = workouts.Count / weeks;
         }
+
+        if (created.HasValue)
+            showModal = true;
     }
 
     void GoCreate()
@@ -205,6 +239,16 @@ else
             .Where(w => w.UserId == user!.Id)
             .OrderByDescending(w => w.Date)
             .ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!chartRendered && chartData.Count > 0)
+        {
+            chartRendered = true;
+
+            await JS.InvokeVoidAsync("renderProgressChart", chartLabels, chartData);
+        }
     }
 
 }

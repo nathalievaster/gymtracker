@@ -136,15 +136,18 @@ else
                 <div class="media-upload">
 
                     <div class="file-upload">
-                        <!-- InputFile är helt dold, triggas via JS -->
+
+                        <!-- InputFile är helt dold, triggas via JS för att undvika native styling -->
                         <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
-                        <!-- Egen knapp utan native-style -->
+
+                        <!-- Egen knapp som triggar filväljaren via JS interop -->
                         <button class="file-btn" @onclick="() => TriggerFileInput(we.Id)">
                             Add media
                         </button>
 
                     </div>
 
+                    <!-- Note och Upload visas bara när en fil är vald för detta exercise -->
                     @if (activeMediaExerciseId == we.Id)
                     {
                         <InputText placeholder="Note..." @bind-Value="mediaNote" class="media-note-input" />
@@ -156,6 +159,7 @@ else
 
                 </div>
 
+                <!-- Mediagrid med bild/video, note, radera-knapp och klick för förstoring -->
                 <div class="media-grid">
 
                     @foreach (var media in we.Media)
@@ -164,7 +168,8 @@ else
 
                             @if (media.MediaType == "image")
                             {
-                                <img src="@media.FilePath" />
+                                <!-- Klick på bilden öppnar lightbox -->
+                                <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)" style="cursor:pointer" />
                             }
                             else
                             {
@@ -175,6 +180,11 @@ else
 
                             <p class="media-note">@media.Note</p>
 
+                            <!-- Radera-knapp för enskild mediafil -->
+                            <button class="undo-btn small" @onclick="() => DeleteMedia(media.Id, media.FilePath)">
+                                Delete
+                            </button>
+
                         </div>
                     }
 
@@ -183,6 +193,27 @@ else
             </div>
         }
     }
+}
+
+<!-- Lightbox modal för förstoring av bild -->
+@if (lightboxOpen)
+{
+    <div class="lightbox-backdrop" @onclick="CloseLightbox">
+
+        <div class="lightbox-content" @onclick:stopPropagation>
+
+            <img src="@lightboxSrc" />
+
+            @if (!string.IsNullOrWhiteSpace(lightboxNote))
+            {
+                <p class="lightbox-note">@lightboxNote</p>
+            }
+
+            <button class="undo-btn" @onclick="CloseLightbox">Close</button>
+
+        </div>
+
+    </div>
 }
 
 @if (showExerciseModal)
@@ -247,6 +278,11 @@ else
     string mediaNote = "";
     int activeMediaExerciseId = 0;
 
+    // Variabler för lightbox (förstorad bild)
+    bool lightboxOpen = false;
+    string lightboxSrc = "";
+    string lightboxNote = "";
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -289,17 +325,20 @@ else
         showExerciseModal = false;
     }
 
+    // Triggar den dolda InputFile via JS interop
     async Task TriggerFileInput(int weId)
     {
         await JS.InvokeVoidAsync("triggerFileInput", $"fileInput_{weId}");
     }
 
+    // Sparar vald fil och markerar vilket exercise som är aktivt
     void UploadMedia(InputFileChangeEventArgs e, int weId)
     {
         selectedFile = e.File;
         activeMediaExerciseId = weId;
     }
 
+    // Sparar filen till disk och postar till databasen
     async Task SaveMedia(int workoutExerciseId)
     {
         if (selectedFile == null) return;
@@ -329,9 +368,46 @@ else
 
         await ReloadWorkout();
 
+        // Återställ uppladdningsstate
         mediaNote = "";
         selectedFile = null;
         activeMediaExerciseId = 0;
+    }
+
+    // Raderar en mediafil från databasen och disk
+    async Task DeleteMedia(int mediaId, string filePath)
+    {
+        var media = db.ExerciseMedia.FirstOrDefault(m => m.Id == mediaId);
+
+        if (media != null)
+        {
+            db.ExerciseMedia.Remove(media);
+            await db.SaveChangesAsync();
+        }
+
+        // Ta bort filen från disk om den finns
+        var diskPath = Path.Combine("wwwroot", filePath.TrimStart('/'));
+
+        if (File.Exists(diskPath))
+            File.Delete(diskPath);
+
+        await ReloadWorkout();
+    }
+
+    // Öppnar lightbox med vald bild och note
+    void OpenLightbox(string src, string note)
+    {
+        lightboxSrc = src;
+        lightboxNote = note;
+        lightboxOpen = true;
+    }
+
+    // Stänger lightbox
+    void CloseLightbox()
+    {
+        lightboxOpen = false;
+        lightboxSrc = "";
+        lightboxNote = "";
     }
 
 
@@ -422,6 +498,7 @@ else
 
         await ReloadWorkout();
     }
+
 
     async Task ReloadWorkout()
     {

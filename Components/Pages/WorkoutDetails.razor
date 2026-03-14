@@ -14,6 +14,7 @@
 @inject UserManager<ApplicationUser> userManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager nav
+@inject IJSRuntime JS
 
 @if (workout == null)
 {
@@ -51,8 +52,6 @@ else
 
     </div>
 
-
-
     <h4 class="section-title">Exercises</h4>
 
     @if (!workout.WorkoutExercises.Any())
@@ -72,7 +71,6 @@ else
                         Delete
                     </button>
                 </div>
-
 
                 @if (!we.Sets.Any())
                 {
@@ -110,7 +108,6 @@ else
                     </table>
                 }
 
-
                 @if (activeSetExerciseId == we.Id)
                 {
                     <div class="add-set-row">
@@ -136,11 +133,57 @@ else
                     </button>
                 }
 
+                <div class="media-upload">
+
+                    <div class="file-upload">
+                        <!-- InputFile är helt dold, triggas via JS -->
+                        <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
+                        <!-- Egen knapp utan native-style -->
+                        <button class="file-btn" @onclick="() => TriggerFileInput(we.Id)">
+                            Add media
+                        </button>
+
+                    </div>
+
+                    @if (activeMediaExerciseId == we.Id)
+                    {
+                        <InputText placeholder="Note..." @bind-Value="mediaNote" class="media-note-input" />
+
+                        <button class="add-btn" @onclick="() => SaveMedia(we.Id)">
+                            Upload
+                        </button>
+                    }
+
+                </div>
+
+                <div class="media-grid">
+
+                    @foreach (var media in we.Media)
+                    {
+                        <div class="media-item">
+
+                            @if (media.MediaType == "image")
+                            {
+                                <img src="@media.FilePath" />
+                            }
+                            else
+                            {
+                                <video controls>
+                                    <source src="@media.FilePath">
+                                </video>
+                            }
+
+                            <p class="media-note">@media.Note</p>
+
+                        </div>
+                    }
+
+                </div>
+
             </div>
         }
     }
 }
-
 
 @if (showExerciseModal)
 {
@@ -199,6 +242,11 @@ else
     int newReps = 0;
     double newWeight = 0;
 
+    // Variabler för filuppladdning
+    IBrowserFile? selectedFile;
+    string mediaNote = "";
+    int activeMediaExerciseId = 0;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -210,6 +258,8 @@ else
             .ThenInclude(we => we.Exercise)
             .Include(w => w.WorkoutExercises)
             .ThenInclude(we => we.Sets)
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Media)
             .FirstOrDefault(w => w.Id == id && w.UserId == user!.Id);
 
         if (workout == null)
@@ -237,6 +287,51 @@ else
     void CloseExerciseModal()
     {
         showExerciseModal = false;
+    }
+
+    async Task TriggerFileInput(int weId)
+    {
+        await JS.InvokeVoidAsync("triggerFileInput", $"fileInput_{weId}");
+    }
+
+    void UploadMedia(InputFileChangeEventArgs e, int weId)
+    {
+        selectedFile = e.File;
+        activeMediaExerciseId = weId;
+    }
+
+    async Task SaveMedia(int workoutExerciseId)
+    {
+        if (selectedFile == null) return;
+
+        var fileName = Guid.NewGuid() + Path.GetExtension(selectedFile.Name);
+
+        var path = Path.Combine(
+            "wwwroot/uploads/exercises",
+            fileName);
+
+        using var stream = new FileStream(path, FileMode.Create);
+
+        await selectedFile.OpenReadStream(50000000).CopyToAsync(stream);
+
+        var media = new ExerciseMedia
+        {
+            WorkoutExerciseId = workoutExerciseId,
+            FilePath = "/uploads/exercises/" + fileName,
+            MediaType = selectedFile.ContentType.StartsWith("video")
+                ? "video"
+                : "image",
+            Note = mediaNote
+        };
+
+        db.ExerciseMedia.Add(media);
+        await db.SaveChangesAsync();
+
+        await ReloadWorkout();
+
+        mediaNote = "";
+        selectedFile = null;
+        activeMediaExerciseId = 0;
     }
 
 
@@ -328,7 +423,6 @@ else
         await ReloadWorkout();
     }
 
-
     async Task ReloadWorkout()
     {
         workout = db.WorkoutSessions
@@ -336,6 +430,8 @@ else
             .ThenInclude(we => we.Exercise)
             .Include(w => w.WorkoutExercises)
             .ThenInclude(we => we.Sets)
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Media)
             .FirstOrDefault(w => w.Id == workout!.Id);
 
         await InvokeAsync(StateHasChanged);

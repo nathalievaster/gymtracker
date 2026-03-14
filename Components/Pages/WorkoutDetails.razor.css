@@ -136,3 +136,96 @@
 .modal-box button {
     margin: 0.3rem;
 }
+
+.media-upload {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.file-upload {
+    position: relative;
+}
+
+/* KNAPPEN */
+.file-btn {
+    display: inline-block;
+    position: relative;
+    /* ← lägg till */
+    overflow: hidden;
+    /* ← lägg till – detta är nyckeln */
+    background: #FF8225;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+/* DÖLJ INPUTFILE */
+.hidden-file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    position: absolute;
+}
+
+/* Note input */
+.media-note-input {
+    padding: 6px;
+    border-radius: 8px;
+    border: none;
+}
+
+/* Upload button */
+.add-btn {
+    background: #FF8225;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s ease;
+    width: fit-content;
+}
+
+.add-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Media grid */
+.media-grid {
+    margin-top: 0.8rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.6rem;
+}
+
+.media-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 6px;
+    text-align: center;
+}
+
+.media-item img,
+.media-item video {
+    width: 100%;
+    border-radius: 8px;
+    max-height: 120px;
+    object-fit: cover;
+}
+
+.media-note {
+    font-size: 0.8rem;
+    margin-top: 4px;
+    opacity: 0.8;
+}

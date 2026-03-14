@@ -86,6 +86,19 @@
 
     </div>
 }
+<!-- Filtrera  -->
+<div class="filter-bar">
+
+    <select value="@selectedFilter" @onchange="ApplyFilter">
+
+        <option value="all">All time</option>
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="year">This year</option>
+
+    </select>
+
+</div>
 
 @if (workouts == null)
 {
@@ -128,13 +141,17 @@ else
     bool showModal = false;
 
     List<WorkoutSession>? workouts;
-
+    // Variabler för statistik
     int totalWorkouts;
     int totalExercises;
     int totalSets;
     double totalVolume;
     double weeklyFrequency;
 
+    // Variabel för filtrering
+    string selectedFilter = "all";
+
+    // Datan till chart.js
     List<string> chartLabels = new();
     List<double> chartData = new();
 
@@ -142,22 +159,21 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Ladda workouts via filtermetoden
+        await LoadWorkouts();
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = await userManager.GetUserAsync(authState.User);
 
-        workouts = db.WorkoutSessions
-            .Where(w => w.UserId == user!.Id)
-            .OrderByDescending(w => w.Date)
-            .ToList();
-
+        // Hämta alla sets
         var sets = db.Sets
             .Include(s => s.WorkoutExercise)
             .ThenInclude(we => we.WorkoutSession)
-            .Where(s => s.WorkoutExercise.WorkoutSession.UserId == user.Id)
+            .Where(s => s.WorkoutExercise.WorkoutSession.UserId == user!.Id)
             .ToList();
 
         // Grupp för grafen: antal workouts per vecka
-        var weeklyWorkouts = workouts
+        var weeklyWorkouts = workouts!
             .GroupBy(w =>
             {
                 return new
@@ -178,13 +194,14 @@ else
         // Statistik
         totalSets = sets.Count;
         totalVolume = sets.Sum(s => s.Reps * s.Weight);
-        totalWorkouts = workouts.Count;
+        totalWorkouts = workouts!.Count;
 
         totalExercises = db.WorkoutExercises
             .Include(we => we.WorkoutSession)
             .Where(we => we.WorkoutSession.UserId == user.Id)
             .Count();
 
+        // Beräkna träningsfrekvens
         if (workouts.Any())
         {
             var firstWorkout = workouts.Min(w => w.Date);
@@ -200,6 +217,29 @@ else
 
         if (created.HasValue)
             showModal = true;
+    }
+
+    // Metod för att ladda workouts med filtrering
+    async Task LoadWorkouts()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        var query = db.WorkoutSessions
+            .Where(w => w.UserId == user!.Id);
+
+        if (selectedFilter == "7")
+            query = query.Where(w => w.Date >= DateTime.Today.AddDays(-7));
+
+        else if (selectedFilter == "30")
+            query = query.Where(w => w.Date >= DateTime.Today.AddDays(-30));
+
+        else if (selectedFilter == "year")
+            query = query.Where(w => w.Date.Year == DateTime.Today.Year);
+
+        workouts = query
+            .OrderByDescending(w => w.Date)
+            .ToList();
     }
 
     void GoCreate()
@@ -232,13 +272,7 @@ else
             await db.SaveChangesAsync();
         }
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await userManager.GetUserAsync(authState.User);
-
-        workouts = db.WorkoutSessions
-            .Where(w => w.UserId == user!.Id)
-            .OrderByDescending(w => w.Date)
-            .ToList();
+        await LoadWorkouts();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -249,6 +283,13 @@ else
 
             await JS.InvokeVoidAsync("renderProgressChart", chartLabels, chartData);
         }
+    }
+
+    async Task ApplyFilter(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value?.ToString() ?? "all";
+
+        await LoadWorkouts();
     }
 
 }

@@ -12,6 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/charts.js"></script>
     <HeadOutlet />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#FF8225" />
+    <script>
+        if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
 </head>
 
 <body>

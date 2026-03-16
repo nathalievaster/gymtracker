@@ -4,13 +4,32 @@
 
 @if (showButton)
 {
-    <button class="add-btn" @onclick="Install">
-        Installera app
+    <button class="add-btn" @onclick="OpenModal">
+        Install app
     </button>
+}
+
+@if (showModal)
+{
+    <div class="install-overlay">
+        <div class="install-modal">
+            <div class="install-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v13M7 9l5 6 5-6"/>
+                    <path d="M3 18h18v2H3z"/>
+                </svg>
+            </div>
+            <h2>Install GymTracker</h2>
+            <p>Add the app to your home screen for quick access – works offline too.</p>
+            <button class="install-confirm" @onclick="Install">Install</button>
+            <button class="install-dismiss" @onclick="Dismiss">Not now</button>
+        </div>
+    </div>
 }
 
 @code {
     bool showButton = false;
+    bool showModal = false;
     private DotNetObjectReference<InstallButton>? objRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -29,10 +48,21 @@
         StateHasChanged();
     }
 
+    void OpenModal()
+    {
+        showModal = true;
+    }
+
     async Task Install()
     {
-        await JS.InvokeVoidAsync("showInstallPrompt");
+        showModal = false;
         showButton = false;
+        await JS.InvokeVoidAsync("showInstallPrompt");
+    }
+
+    void Dismiss()
+    {
+        showModal = false;
     }
 
     public async ValueTask DisposeAsync()

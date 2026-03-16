@@ -1,0 +1,66 @@
+.install-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.install-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 320px;
+    width: 90%;
+    text-align: center;
+}
+
+.install-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: #FF8225;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-modal h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.install-modal p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+}
+
+.install-confirm {
+    width: 100%;
+    padding: 0.65rem;
+    background: #FF8225;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+}
+
+.install-dismiss {
+    width: 100%;
+    padding: 0.65rem;
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}

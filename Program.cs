@@ -7,8 +7,10 @@ using GymTracker.Data;
 using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
-Env.Load();
-
+// Ladda .env lokalt om den finns, på Azure används miljövariabler direkt
+if (File.Exists(".env"))
+    Env.Load();
+    
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -92,6 +94,19 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
+}
+// Skapa nödvändiga mappar om de inte finns på servern
+var uploadsPath = Path.Combine(builder.Environment.WebRootPath, "uploads", "exercises");
+Directory.CreateDirectory(uploadsPath);
+
+var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+Directory.CreateDirectory(dataPath);
+
+// Kör migrationer automatiskt vid uppstart
+using (var dbScope = app.Services.CreateScope())
+{
+    var db = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
 app.Run();

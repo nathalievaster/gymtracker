@@ -12,8 +12,35 @@
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
 
 <h1>Exercise library</h1>
+
+<!-- Progressionsgraf: maxvikt per pass för vald övning -->
+<div class="chart-card">
+
+    <h3>Progression</h3>
+
+    <!-- Dropdown för att välja övning att visa i grafen -->
+    <select value="@selectedExerciseId" @onchange="OnExerciseSelected">
+        <option value="0">Select exercise...</option>
+
+        @foreach (var ex in allExercisesForChart)
+        {
+            <option value="@ex.Id">@ex.Name</option>
+        }
+    </select>
+
+    @if (chartHasData)
+    {
+        <canvas id="progressionChart"></canvas>
+    }
+    else if (selectedExerciseId != 0)
+    {
+        <p class="empty">No data yet for this exercise.</p>
+    }
+
+</div>
 
 @if (isAdmin)
 {
@@ -27,9 +54,9 @@
         <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
 
         @if (!string.IsNullOrEmpty(globalMessage))
-{
-    <p class="message">@globalMessage</p>
-}
+        {
+            <p class="message">@globalMessage</p>
+        }
     </section>
 }
 
@@ -41,10 +68,10 @@
 
     <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
 
-   @if (!string.IsNullOrEmpty(personalMessage))
-{
-    <p class="message">@personalMessage</p>
-}
+    @if (!string.IsNullOrEmpty(personalMessage))
+    {
+        <p class="message">@personalMessage</p>
+    }
 </section>
 
 <h3>Global exercises</h3>
@@ -93,6 +120,9 @@ else
     List<Exercise> globalExercises = new();
     List<Exercise> myExercises = new();
 
+    // Alla övningar användaren har loggat – visas i graf-dropdown
+    List<Exercise> allExercisesForChart = new();
+
     string globalName = "";
     string globalDescription = "";
 
@@ -106,6 +136,11 @@ else
     ApplicationUser? user;
     bool isAdmin = false;
 
+    // Variabler för progressionsgrafen
+    int selectedExerciseId = 0;
+    bool chartHasData = false;
+
+
     protected override async Task OnInitializedAsync()
     {
         var auth = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -114,7 +149,64 @@ else
         isAdmin = await userManager.IsInRoleAsync(user!, "Admin");
 
         await LoadExercises();
+        await LoadChartExercises();
     }
+
+    // Hämtar alla övningar användaren faktiskt har loggat sets på
+    async Task LoadChartExercises()
+    {
+        var loggedExerciseIds = await db.Sets
+            .Include(s => s.WorkoutExercise)
+            .ThenInclude(we => we.WorkoutSession)
+            .Where(s => s.WorkoutExercise.WorkoutSession.UserId == user!.Id)
+            .Select(s => s.WorkoutExercise.ExerciseId)
+            .Distinct()
+            .ToListAsync();
+
+        allExercisesForChart = await db.Exercises
+            .Where(e => loggedExerciseIds.Contains(e.Id))
+            .OrderBy(e => e.Name)
+            .ToListAsync();
+    }
+
+    // Körs när användaren väljer en övning i dropdown
+    async Task OnExerciseSelected(ChangeEventArgs e)
+    {
+        selectedExerciseId = int.Parse(e.Value?.ToString() ?? "0");
+        chartHasData = false;
+
+        if (selectedExerciseId == 0) return;
+
+        // Hämta alla sets för vald övning, gruppera per datum och ta maxvikt per pass
+        var data = await db.Sets
+            .Include(s => s.WorkoutExercise)
+            .ThenInclude(we => we.WorkoutSession)
+            .Where(s =>
+                s.WorkoutExercise.WorkoutSession.UserId == user!.Id &&
+                s.WorkoutExercise.ExerciseId == selectedExerciseId)
+            .ToListAsync();
+
+        if (!data.Any()) return;
+
+        // Gruppera per datum, ta maxvikt per pass
+        var grouped = data
+            .GroupBy(s => s.WorkoutExercise.WorkoutSession.Date.Date)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        var labels = grouped.Select(g => g.Key.ToShortDateString()).ToList();
+        var values = grouped.Select(g => g.Max(s => s.Weight)).ToList();
+
+        chartHasData = true;
+
+        // StateHasChanged behövs så att canvas renderas innan JS anropas
+        StateHasChanged();
+
+        await Task.Delay(50);
+
+        await JS.InvokeVoidAsync("renderProgressionChart", labels, values);
+    }
+
 
     async Task LoadExercises()
     {
@@ -135,7 +227,7 @@ else
 
         if (string.IsNullOrWhiteSpace(globalName))
         {
-            globalMessage= "Name required";
+            globalMessage = "Name required";
             return;
         }
 

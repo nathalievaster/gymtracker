@@ -86,17 +86,24 @@
 
     </div>
 }
-<!-- Filtrera  -->
+
+<!-- Filter och sökruta bredvid varandra -->
 <div class="filter-bar">
 
     <select value="@selectedFilter" @onchange="ApplyFilter">
-
         <option value="all">All time</option>
         <option value="7">Last 7 days</option>
         <option value="30">Last 30 days</option>
         <option value="year">This year</option>
-
     </select>
+
+    <!-- Sökruta – listan filtreras vid varje knapptryckning -->
+    <input
+        type="text"
+        placeholder="Search workouts..."
+        value="@searchQuery"
+        @oninput="OnSearchInput"
+        class="search-input" />
 
 </div>
 
@@ -104,14 +111,14 @@
 {
     <p>Loading workouts...</p>
 }
-else if (!workouts.Any())
+else if (!FilteredWorkouts.Any())
 {
-    <p>You have no workouts yet. Get started!</p>
+    <p>No workouts found.</p>
 }
 else
 {
     <ul>
-        @foreach (var w in workouts)
+        @foreach (var w in FilteredWorkouts)
         {
             <li>
                 <a href="/workout/@w.Id">
@@ -141,6 +148,7 @@ else
     bool showModal = false;
 
     List<WorkoutSession>? workouts;
+
     // Variabler för statistik
     int totalWorkouts;
     int totalExercises;
@@ -150,6 +158,16 @@ else
 
     // Variabel för filtrering
     string selectedFilter = "all";
+
+    // Sökfråga – filtrerar listan i realtid
+    string searchQuery = "";
+
+    // Returnerar filtrerad lista baserat på sökfrågan
+    IEnumerable<WorkoutSession> FilteredWorkouts =>
+        workouts?.Where(w =>
+            string.IsNullOrWhiteSpace(searchQuery) ||
+            w.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+        ) ?? Enumerable.Empty<WorkoutSession>();
 
     // Datan till chart.js
     List<string> chartLabels = new();
@@ -217,6 +235,12 @@ else
 
         if (created.HasValue)
             showModal = true;
+    }
+
+    // Uppdaterar sökfrågan vid varje knapptryckning
+    void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
     }
 
     // Metod för att ladda workouts med filtrering

@@ -152,7 +152,7 @@ p:first-of-type {
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: 
+    transition:
         transform 0.15s ease,
         box-shadow 0.15s ease,
         background 0.15s ease;
@@ -160,11 +160,33 @@ p:first-of-type {
 
 .filter-bar select:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     background: #ffa356;
 }
 
 .filter-bar option {
     background: #173B45;
     color: white;
+}
+
+/* Sökruta bredvid filter */
+.search-input {
+    padding: 8px 16px;
+    border: 2px solid #FF8225;
+    border-radius: 20px;
+    background: transparent;
+    color: #FF8225;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.search-input::placeholder {
+    color: #FF8225;
+}
+
+.search-input:focus {
+    border-color: #FF8225;
+    box-shadow: 0 0 10px rgba(255, 130, 37, 0.5);
+    transform: scale(1.03);
 }

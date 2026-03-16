@@ -25,10 +25,42 @@
     <Routes />
     <script src="_framework/blazor.web.js"></script>
     <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
+    <script>
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.dispatchEvent(new CustomEvent('showInstallButton'));
+        });
+
+        window.registerInstallListener = (dotnetRef) => {
+            if (deferredPrompt) {
+                dotnetRef.invokeMethodAsync('ShowButton');
+            }
+            document.addEventListener('showInstallButton', () => {
+                dotnetRef.invokeMethodAsync('ShowButton');
+            });
+        };
+
+        window.showInstallPrompt = () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                });
+            }
+        };
+
         window.triggerFileInput = (elementId) => {
-        const el = document.getElementById(elementId);
-        console.log("Letar efter:", elementId, "Hittade:", el);
-        if (el) el.click();
+            setTimeout(() => {
+                const el = document.getElementById(elementId);
+                if (el) el.click();
+            }, 50);
         };
     </script>
 </body>

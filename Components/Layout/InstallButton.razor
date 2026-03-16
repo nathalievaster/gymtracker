@@ -1,0 +1,42 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (showButton)
+{
+    <button class="install-btn" @onclick="Install">
+        Installera app
+    </button>
+}
+
+@code {
+    bool showButton = false;
+    private DotNetObjectReference<InstallButton>? objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("registerInstallListener", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public void ShowButton()
+    {
+        showButton = true;
+        StateHasChanged();
+    }
+
+    async Task Install()
+    {
+        await JS.InvokeVoidAsync("showInstallPrompt");
+        showButton = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+    }
+}

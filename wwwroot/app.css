@@ -18,6 +18,7 @@ button {
     font-size: 1em;
     margin-bottom: 1em;
     cursor: pointer;
+    transition: background-color 0.5s;
 }
 
 button.add-btn {
@@ -28,6 +29,13 @@ button.add-btn {
 button.undo-btn {
     background-color: #B43F3F;
     color: #F8EDED;
+}
+
+button.add-btn:hover {
+    background-color: #bd611b;
+}
+button.undo-btn:hover {
+    background-color: #802d2d;
 }
 
 /* HEL SIDA */

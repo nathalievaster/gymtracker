@@ -141,7 +141,7 @@ else
                         <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
 
                         <!-- Egen knapp som triggar filväljaren via JS interop -->
-                        <button class="file-btn" @onclick="() => TriggerFileInput(we.Id)">
+                        <button class="add-btn small" @onclick="() => TriggerFileInput(we.Id)">
                             Add media
                         </button>
 
@@ -169,7 +169,8 @@ else
                             @if (media.MediaType == "image")
                             {
                                 <!-- Klick på bilden öppnar lightbox -->
-                                <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)" style="cursor:pointer" />
+                                <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)"
+                                     style="cursor:pointer" />
                             }
                             else
                             {
@@ -224,18 +225,34 @@ else
 
             <h3>Add exercise</h3>
 
-            <select @bind="selectedExerciseId">
+            <!-- Sökruta som filtrerar övningar i realtid -->
+            <input type="text"                   placeholder="Search exercises..."                   value="@exerciseSearch"                   @oninput="OnExerciseSearch"
+                   class="search-input" />
 
-                <option value="0">Select exercise</option>
+            <!-- Filtrerad lista visas när man skrivit något -->
+            @if (!string.IsNullOrWhiteSpace(exerciseSearch))
+            {
+                <div class="exercise-search-results">
 
-                @foreach (var ex in allExercises)
-                {
-                    <option value="@ex.Id">@ex.Name</option>
-                }
+                    @foreach (var ex in allExercises.Where(e =>
+                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        <div class="exercise-search-item @(selectedExerciseId == ex.Id ? "selected" : "")"
+                             @onclick="() => SelectExercise(ex)">
+                            @ex.Name
+                        </div>
+                    }
 
-            </select>
+                </div>
+            }
 
-            <br /><br />
+            <!-- Visar vald övning -->
+            @if (selectedExerciseId != 0)
+            {
+                <p class="selected-exercise-label">✓ @selectedExerciseName</p>
+            }
+
+            <br />
 
             <b>or create new</b>
 
@@ -408,6 +425,25 @@ else
         lightboxOpen = false;
         lightboxSrc = "";
         lightboxNote = "";
+    }
+
+    // Variabler för övningssökning i modal
+    string exerciseSearch = "";
+    string selectedExerciseName = "";
+
+    void OnExerciseSearch(ChangeEventArgs e)
+    {
+        exerciseSearch = e.Value?.ToString() ?? "";
+        // Nollställ val om man börjar söka igen
+        selectedExerciseId = 0;
+        selectedExerciseName = "";
+    }
+
+    void SelectExercise(Exercise ex)
+    {
+        selectedExerciseId = ex.Id;
+        selectedExerciseName = ex.Name;
+        exerciseSearch = "";
     }
 
 

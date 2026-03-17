@@ -148,22 +148,6 @@
     position: relative;
 }
 
-/* KNAPPEN */
-.file-btn {
-    display: inline-block;
-    position: relative;
-    /* ← lägg till */
-    overflow: hidden;
-    /* ← lägg till – detta är nyckeln */
-    background: #FF8225;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: 0.2s;
-}
-
 /* DÖLJ INPUTFILE */
 .hidden-file-input {
     position: absolute;
@@ -181,24 +165,6 @@
     padding: 6px;
     border-radius: 8px;
     border: none;
-}
-
-/* Upload button */
-.add-btn {
-    background: #FF8225;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: 0.2s ease;
-    width: fit-content;
-}
-
-.add-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
 }
 
 /* Media grid */
@@ -261,4 +227,37 @@
 .lightbox-note {
     color: white;
     font-size: 1rem;
+}
+
+/* Dropdown-lista med sökresultat */
+.exercise-search-results {
+    display: flex;
+    flex-direction: column;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 130, 37, 0.3);
+    border-radius: 10px;
+    margin-top: 6px;
+}
+
+.exercise-search-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 8px;
+}
+
+.exercise-search-item:hover {
+    background: rgba(255, 130, 37, 0.15);
+}
+
+.exercise-search-item.selected {
+    background: rgba(255, 130, 37, 0.3);
+}
+
+/* Visar vald övning under sökrutan */
+.selected-exercise-label {
+    color: #FF8225;
+    font-size: 0.9rem;
+    margin-top: 6px;
 }

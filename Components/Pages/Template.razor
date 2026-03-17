@@ -1,0 +1,182 @@
+@page "/templates"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using GymTracker.Data
+@using GymTracker.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext db
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager nav
+
+<h1>Templates</h1>
+
+<!-- Skapa ny mall från grunden -->
+<section class="card">
+
+    <h3>Create new template</h3>
+
+    <div class="form-group">
+        <label>Name</label>
+        <input placeholder="Push day, Leg day..." @bind="newTemplateName" />
+    </div>
+
+    <button class="add-btn" @onclick="CreateTemplate">Create</button>
+
+    @if (!string.IsNullOrEmpty(createMessage))
+    {
+        <p class="message">@createMessage</p>
+    }
+
+</section>
+
+<!-- Lista alla mallar -->
+<h3>Your templates</h3>
+
+@if (templates == null)
+{
+    <p>Loading...</p>
+}
+else if (!templates.Any())
+{
+    <p class="empty">No templates yet. Create one above or save a workout as a template.</p>
+}
+else
+{
+    <ul>
+        @foreach (var t in templates)
+        {
+            <li>
+                <!-- Klick på mallnamnet går till template-detaljsidan -->
+                <a href="/workout/@t.Id">
+                    <b>@t.Title</b>
+                    <span class="template-badge">Template</span>
+                </a>
+
+                <div class="actions">
+                    <!-- Använd mallen – skapar ett nytt träningspass baserat på mallen -->
+                    <button class="add-btn small" @onclick="() => UseTemplate(t.Id)">
+                        Use template
+                    </button>
+
+                    <!-- Radera mallen -->
+                    <button class="undo-btn small" @onclick="() => DeleteTemplate(t.Id)">
+                        Delete
+                    </button>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+
+    List<WorkoutSession>? templates;
+    string newTemplateName = "";
+    string createMessage = "";
+    ApplicationUser? user;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        user = await userManager.GetUserAsync(authState.User);
+
+        await LoadTemplates();
+    }
+
+    // Hämtar alla mallar för inloggad användare
+    async Task LoadTemplates()
+    {
+        templates = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .ThenInclude(we => we.Exercise)
+            .Where(w => w.UserId == user!.Id && w.IsTemplate)
+            .OrderBy(w => w.Title)
+            .ToListAsync();
+    }
+
+    // Skapar en ny tom mall
+    async Task CreateTemplate()
+    {
+        if (string.IsNullOrWhiteSpace(newTemplateName))
+        {
+            createMessage = "Name required";
+            return;
+        }
+
+        var template = new WorkoutSession
+        {
+            UserId = user!.Id,
+            Title = newTemplateName.Trim(),
+            Date = DateTime.Today,
+            CreatedAt = DateTime.Now,
+            IsTemplate = true
+        };
+
+        db.WorkoutSessions.Add(template);
+        await db.SaveChangesAsync();
+
+        // Navigera till template-sidan så man kan lägga till övningar
+        nav.NavigateTo($"/workout/{template.Id}");
+    }
+
+    // Skapar ett nytt träningspass baserat på vald mall
+    async Task UseTemplate(int templateId)
+    {
+        var template = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .FirstOrDefaultAsync(w => w.Id == templateId);
+
+        if (template == null) return;
+
+        // Skapa nytt pass med dagens datum
+        var newSession = new WorkoutSession
+        {
+            UserId = user!.Id,
+            Title = template.Title,
+            Date = DateTime.Today,
+            CreatedAt = DateTime.Now,
+            IsTemplate = false
+        };
+
+        db.WorkoutSessions.Add(newSession);
+        await db.SaveChangesAsync();
+
+        // Kopiera övningar från mallen till det nya passet
+        foreach (var we in template.WorkoutExercises)
+        {
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = newSession.Id,
+                ExerciseId = we.ExerciseId
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        nav.NavigateTo($"/workout/{newSession.Id}");
+    }
+
+    // Raderar en mall
+    async Task DeleteTemplate(int templateId)
+    {
+        var template = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .FirstOrDefaultAsync(w => w.Id == templateId);
+
+        if (template != null)
+        {
+            db.WorkoutSessions.Remove(template);
+            await db.SaveChangesAsync();
+        }
+
+        await LoadTemplates();
+    }
+
+}

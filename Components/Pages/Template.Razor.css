@@ -1,0 +1,183 @@
+.card {
+    background: #173B45;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 650px;
+    margin: 1em auto;
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.exercise-card {
+    background: #173B45;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 650px;
+    margin: 1em auto;
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.exercise-header h5 {
+    margin: 0;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.template-badge {
+    background: rgba(255, 130, 37, 0.2);
+    color: #FF8225;
+    border: 1px solid #FF8225;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+.sets-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.sets-table th {
+    text-align: left;
+    color: #B8F2E6;
+    font-weight: 600;
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sets-table td {
+    padding: 0.35rem 0.5rem;
+    color: #e0f4ef;
+}
+
+.sets-table tr:hover td {
+    background: rgba(255,255,255,0.04);
+}
+
+input[type="text"],
+input:not([type]) {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    color: white;
+    width: 100%;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input:not([type]):focus {
+    border-color: #B8F2E6;
+}
+
+input::placeholder {
+    color: rgba(255,255,255,0.35);
+}
+
+.message {
+    color: #B8F2E6;
+    font-size: 0.88rem;
+    margin: 0;
+}
+
+.empty {
+    color: rgba(255,255,255,0.35);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin: 0;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* ── Modal box ── */
+.modal {
+    background: #173B45;
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 90%;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    animation: modalPop 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.modal h3 {
+    margin: 0 0 0.25rem;
+}
+
+/* ── Exercise search results ── */
+.exercise-search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.exercise-search-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: #e0f4ef;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.exercise-search-item:hover,
+.exercise-search-item.selected {
+    background: rgba(184, 242, 230, 0.15);
+    color: #B8F2E6;
+}
+
+.selected-exercise-label {
+    color: #B8F2E6;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ── Shared animation ── */
+@keyframes modalPop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

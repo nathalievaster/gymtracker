@@ -16,14 +16,13 @@
 
 <h1>Templates</h1>
 
-<!-- Skapa ny mall från grunden -->
-<section class="card">
+<!-- Skapa ny mall -->
+<div class="card">
 
     <h3>Create new template</h3>
 
     <div class="form-group">
-        <label>Name</label>
-        <input placeholder="Push day, Leg day..." @bind="newTemplateName" />
+        <input placeholder="Template name, e.g. Push day..." @bind="newTemplateName" />
     </div>
 
     <button class="add-btn" @onclick="CreateTemplate">Create</button>
@@ -33,52 +32,164 @@
         <p class="message">@createMessage</p>
     }
 
-</section>
+</div>
 
 <!-- Lista alla mallar -->
-<h3>Your templates</h3>
-
 @if (templates == null)
 {
     <p>Loading...</p>
 }
 else if (!templates.Any())
 {
-    <p class="empty">No templates yet. Create one above or save a workout as a template.</p>
+    <p class="empty">No templates yet.</p>
 }
 else
 {
-    <ul>
-        @foreach (var t in templates)
-        {
-            <li>
-                <!-- Klick på mallnamnet går till template-detaljsidan -->
-                <a href="/workout/@t.Id">
-                    <b>@t.Title</b>
-                    <span class="template-badge">Template</span>
-                </a>
+    @foreach (var t in templates)
+    {
+        <div class="exercise-card">
 
-                <div class="actions">
-                    <!-- Använd mallen – skapar ett nytt träningspass baserat på mallen -->
+            <!-- Mall-header med namn, use och delete -->
+            <div class="exercise-header">
+
+                <h5>
+                    @t.Title
+                    <span class="template-badge">Template</span>
+                </h5>
+
+                <div style="display:flex; gap:6px;">
+
                     <button class="add-btn small" @onclick="() => UseTemplate(t.Id)">
                         Use template
                     </button>
 
-                    <!-- Radera mallen -->
                     <button class="undo-btn small" @onclick="() => DeleteTemplate(t.Id)">
                         Delete
                     </button>
+
                 </div>
-            </li>
-        }
-    </ul>
+
+            </div>
+
+            <!-- Lista övningar i mallen -->
+            @if (!t.WorkoutExercises.Any())
+            {
+                <p class="empty">No exercises yet</p>
+            }
+            else
+            {
+                <table class="sets-table">
+
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var we in t.WorkoutExercises)
+                        {
+                            <tr>
+                                <td>@we.Exercise?.Name</td>
+                                <td>
+                                    <button class="undo-btn small" @onclick="() => RemoveExerciseFromTemplate(we.Id, t.Id)">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            }
+
+            <!-- Knapp för att lägga till övning i denna mall -->
+            <button class="add-btn small" @onclick="() => OpenExerciseModal(t.Id)">
+                Add exercise
+            </button>
+
+        </div>
+    }
+}
+
+<!-- Modal för att lägga till övning i en mall -->
+@if (showExerciseModal)
+{
+    <div class="modal-overlay">
+
+        <div class="modal">
+
+            <h3>Add exercise</h3>
+
+            <!-- Sökruta som filtrerar övningar i realtid -->
+            <input type="text"
+                   placeholder="Search exercises..."
+                   value="@exerciseSearch"
+                   @oninput="OnExerciseSearch"
+                   class="search-input" />
+
+            <!-- Filtrerad lista visas när man skrivit något -->
+            @if (!string.IsNullOrWhiteSpace(exerciseSearch))
+            {
+                <div class="exercise-search-results">
+
+                    @foreach (var ex in allExercises.Where(e =>
+                        e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        <div class="exercise-search-item @(selectedExerciseId == ex.Id ? "selected" : "")"
+                             @onclick="() => SelectExercise(ex)">
+                            @ex.Name
+                        </div>
+                    }
+
+                </div>
+            }
+
+            <!-- Visar vald övning -->
+            @if (selectedExerciseId != 0)
+            {
+                <p class="selected-exercise-label">✓ @selectedExerciseName</p>
+            }
+
+            <br />
+
+            <b>or create new</b>
+
+            <input placeholder="Exercise name" @bind="newExerciseName" />
+
+            <br /><br />
+
+            <button class="add-btn" @onclick="AddExerciseToTemplate">
+                Add
+            </button>
+
+            <button class="undo-btn" @onclick="CloseExerciseModal">
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
 }
 
 @code {
 
     List<WorkoutSession>? templates;
+    List<Exercise> allExercises = new();
+
+    // Variabler för att skapa ny mall
     string newTemplateName = "";
     string createMessage = "";
+
+    // Variabler för övningssökning i modal
+    bool showExerciseModal = false;
+    int activeTemplateId = 0;
+    int selectedExerciseId = 0;
+    string selectedExerciseName = "";
+    string exerciseSearch = "";
+    string newExerciseName = "";
+
     ApplicationUser? user;
 
 
@@ -88,9 +199,14 @@ else
         user = await userManager.GetUserAsync(authState.User);
 
         await LoadTemplates();
+
+        // Hämta alla övningar för sökmodalen
+        allExercises = await db.Exercises
+            .OrderBy(e => e.Name)
+            .ToListAsync();
     }
 
-    // Hämtar alla mallar för inloggad användare
+    // Hämtar alla mallar med övningar
     async Task LoadTemplates()
     {
         templates = await db.WorkoutSessions
@@ -122,8 +238,97 @@ else
         db.WorkoutSessions.Add(template);
         await db.SaveChangesAsync();
 
-        // Navigera till template-sidan så man kan lägga till övningar
-        nav.NavigateTo($"/workout/{template.Id}");
+        newTemplateName = "";
+        createMessage = "Template created!";
+
+        await LoadTemplates();
+    }
+
+    // Öppnar modal för att lägga till övning i en specifik mall
+    void OpenExerciseModal(int templateId)
+    {
+        activeTemplateId = templateId;
+        showExerciseModal = true;
+        exerciseSearch = "";
+        selectedExerciseId = 0;
+        selectedExerciseName = "";
+        newExerciseName = "";
+    }
+
+    // Stänger modal och nollställer state
+    void CloseExerciseModal()
+    {
+        showExerciseModal = false;
+        activeTemplateId = 0;
+        exerciseSearch = "";
+        selectedExerciseId = 0;
+        selectedExerciseName = "";
+        newExerciseName = "";
+    }
+
+    // Filtrerar övningar vid varje knapptryckning
+    void OnExerciseSearch(ChangeEventArgs e)
+    {
+        exerciseSearch = e.Value?.ToString() ?? "";
+        selectedExerciseId = 0;
+        selectedExerciseName = "";
+    }
+
+    // Väljer en övning från sökresultaten
+    void SelectExercise(Exercise ex)
+    {
+        selectedExerciseId = ex.Id;
+        selectedExerciseName = ex.Name;
+        exerciseSearch = "";
+    }
+
+    // Lägger till övning i aktiv mall
+    async Task AddExerciseToTemplate()
+    {
+        if (activeTemplateId == 0) return;
+
+        Exercise? exercise = null;
+
+        if (selectedExerciseId != 0)
+            exercise = db.Exercises.FirstOrDefault(e => e.Id == selectedExerciseId);
+
+        if (!string.IsNullOrWhiteSpace(newExerciseName))
+        {
+            exercise = new Exercise { Name = newExerciseName.Trim() };
+            db.Exercises.Add(exercise);
+            await db.SaveChangesAsync();
+
+            // Uppdatera övningslistan med den nya övningen
+            allExercises = await db.Exercises.OrderBy(e => e.Name).ToListAsync();
+        }
+
+        if (exercise == null) return;
+
+        db.WorkoutExercises.Add(new WorkoutExercise
+        {
+            WorkoutSessionId = activeTemplateId,
+            ExerciseId = exercise.Id
+        });
+
+        await db.SaveChangesAsync();
+
+        CloseExerciseModal();
+
+        await LoadTemplates();
+    }
+
+    // Tar bort en övning från en mall
+    async Task RemoveExerciseFromTemplate(int workoutExerciseId, int templateId)
+    {
+        var we = db.WorkoutExercises.FirstOrDefault(x => x.Id == workoutExerciseId);
+
+        if (we != null)
+        {
+            db.WorkoutExercises.Remove(we);
+            await db.SaveChangesAsync();
+        }
+
+        await LoadTemplates();
     }
 
     // Skapar ett nytt träningspass baserat på vald mall
@@ -135,7 +340,7 @@ else
 
         if (template == null) return;
 
-        // Skapa nytt pass med dagens datum
+        // Skapa nytt pass med mallens titel och dagens datum
         var newSession = new WorkoutSession
         {
             UserId = user!.Id,
@@ -160,6 +365,7 @@ else
 
         await db.SaveChangesAsync();
 
+        // Navigera direkt till det nya passet
         nav.NavigateTo($"/workout/{newSession.Id}");
     }
 

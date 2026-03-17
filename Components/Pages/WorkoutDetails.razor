@@ -34,6 +34,10 @@ else
 
         <div class="workout-meta">
             <span>@workout.Date.ToShortDateString()</span>
+            @if (workout.IsTemplate)
+            {
+                <span class="template-badge">Template</span>
+            }
         </div>
 
         @if (!string.IsNullOrWhiteSpace(workout.Notes))
@@ -45,6 +49,37 @@ else
             <span>@workout.WorkoutExercises.Count exercises</span>
             <span>@workout.WorkoutExercises.SelectMany(x => x.Sets).Count() sets</span>
         </div>
+
+        <!-- Spara detta pass som mall -->
+        @if (!workout.IsTemplate)
+        {
+            <button class="add-btn" @onclick="SaveAsTemplate">
+                Save as template
+            </button>
+        }
+
+        <!-- Använd en mall för att lägga till övningar -->
+        @if (templates.Any())
+        {
+            <div class="template-select-row">
+
+                <select @bind="selectedTemplateId">
+                    <option value="0">Use template...</option>
+                    @foreach (var t in templates)
+                    {
+                        <option value="@t.Id">@t.Title</option>
+                    }
+                </select>
+
+                @if (selectedTemplateId != 0)
+                {
+                    <button class="add-btn small" @onclick="ApplyTemplate">
+                        Apply
+                    </button>
+                }
+
+            </div>
+        }
 
         <button class="add-btn big" @onclick="OpenExerciseModal">
             Add exercise
@@ -226,7 +261,10 @@ else
             <h3>Add exercise</h3>
 
             <!-- Sökruta som filtrerar övningar i realtid -->
-            <input type="text"                   placeholder="Search exercises..."                   value="@exerciseSearch"                   @oninput="OnExerciseSearch"
+            <input type="text"
+                   placeholder="Search exercises..."
+                   value="@exerciseSearch"
+                   @oninput="OnExerciseSearch"
                    class="search-input" />
 
             <!-- Filtrerad lista visas när man skrivit något -->
@@ -235,7 +273,7 @@ else
                 <div class="exercise-search-results">
 
                     @foreach (var ex in allExercises.Where(e =>
-                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                        e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
                     {
                         <div class="exercise-search-item @(selectedExerciseId == ex.Id ? "selected" : "")"
                              @onclick="() => SelectExercise(ex)">
@@ -300,11 +338,17 @@ else
     string lightboxSrc = "";
     string lightboxNote = "";
 
+    // Variabler för mallhantering
+    List<WorkoutSession> templates = new();
+    int selectedTemplateId = 0;
+
+    ApplicationUser? user;
+
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await userManager.GetUserAsync(authState.User);
+        user = await userManager.GetUserAsync(authState.User);
 
         workout = db.WorkoutSessions
             .Include(w => w.WorkoutExercises)
@@ -324,6 +368,13 @@ else
         allExercises = db.Exercises
             .OrderBy(e => e.Name)
             .ToList();
+
+        // Hämta användarens mallar för dropdown
+        templates = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .Where(w => w.UserId == user!.Id && w.IsTemplate)
+            .OrderBy(w => w.Title)
+            .ToListAsync();
     }
 
 
@@ -340,6 +391,85 @@ else
     void CloseExerciseModal()
     {
         showExerciseModal = false;
+        exerciseSearch = "";
+        selectedExerciseId = 0;
+        selectedExerciseName = "";
+    }
+
+    // Sparar detta träningspass som en mall
+    async Task SaveAsTemplate()
+    {
+        if (workout == null) return;
+
+        // Skapa en ny mall baserad på detta pass
+        var template = new WorkoutSession
+        {
+            UserId = user!.Id,
+            Title = workout.Title,
+            Date = DateTime.Today,
+            CreatedAt = DateTime.Now,
+            IsTemplate = true
+        };
+
+        db.WorkoutSessions.Add(template);
+        await db.SaveChangesAsync();
+
+        // Kopiera övningar från passet till mallen
+        foreach (var we in workout.WorkoutExercises)
+        {
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = template.Id,
+                ExerciseId = we.ExerciseId
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        // Uppdatera malldropdown
+        templates = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .Where(w => w.UserId == user!.Id && w.IsTemplate)
+            .OrderBy(w => w.Title)
+            .ToListAsync();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // Applicerar vald mall på detta träningspass
+    async Task ApplyTemplate()
+    {
+        if (selectedTemplateId == 0 || workout == null) return;
+
+        var template = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .FirstOrDefaultAsync(w => w.Id == selectedTemplateId);
+
+        if (template == null) return;
+
+        // Hämta redan tillagda övnings-IDs för att undvika dubletter
+        var existingExerciseIds = workout.WorkoutExercises
+            .Select(we => we.ExerciseId)
+            .ToHashSet();
+
+        foreach (var we in template.WorkoutExercises)
+        {
+            // Lägg bara till övningar som inte redan finns i passet
+            if (!existingExerciseIds.Contains(we.ExerciseId))
+            {
+                db.WorkoutExercises.Add(new WorkoutExercise
+                {
+                    WorkoutSessionId = workout.Id,
+                    ExerciseId = we.ExerciseId
+                });
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+        selectedTemplateId = 0;
+
+        await ReloadWorkout();
     }
 
     // Triggar den dolda InputFile via JS interop
@@ -481,6 +611,7 @@ else
 
         newExerciseName = "";
         selectedExerciseId = 0;
+        selectedExerciseName = "";
     }
 
 

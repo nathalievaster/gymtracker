@@ -261,3 +261,36 @@
     font-size: 0.9rem;
     margin-top: 6px;
 }
+
+/* Badge som visar att ett pass är en mall */
+.template-badge {
+    background: rgba(255, 130, 37, 0.2);
+    color: #FF8225;
+    border: 1px solid #FF8225;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+/* Rad med malldropdown och Apply-knapp */
+.template-select-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.template-select-row select {
+    border-radius: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    margin-bottom: 1em;
+    padding: 0.45rem 1.2rem;
+    border-radius: 30px;
+    border: 1px solid #FF8225;
+    background: #173B45;
+    color: #FF8225;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}

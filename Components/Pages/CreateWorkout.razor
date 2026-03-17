@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
 
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
@@ -15,6 +16,7 @@
 @inject NavigationManager nav
 
 <h1>Create workout</h1>
+
 <section class="card">
     <EditForm Model="model" OnValidSubmit="SaveWorkout">
         <DataAnnotationsValidator />
@@ -22,41 +24,101 @@
 
         <div class="form-group">
             <label>Title</label>
-            <InputText         @bind-Value="model.Title"        placeholder="Leg day, Upper body, Morning run..." />
+            <InputText @bind-Value="model.Title" placeholder="Leg day, Upper body, Morning run..." />
         </div>
 
         <div class="form-group">
             <label>Date</label>
-            <InputDate         @bind-Value="model.Date"        placeholder="Select workout date" />
+            <InputDate @bind-Value="model.Date" placeholder="Select workout date" />
         </div>
 
         <div class="form-group">
             <label>Notes</label>
-            <InputTextArea         @bind-Value="model.Notes"
-                                   placeholder="How did the workout feel?" />
+            <InputTextArea @bind-Value="model.Notes" placeholder="How did the workout feel?" />
         </div>
+
+        <!-- Välj en mall att utgå ifrån (valfritt) -->
+        @if (templates.Any())
+        {
+            <div class="form-group">
+                <label>Use template (optional)</label>
+                <select @bind="selectedTemplateId">
+                    <option value="0">No template</option>
+                    @foreach (var t in templates)
+                    {
+                        <option value="@t.Id">@t.Title</option>
+                    }
+                </select>
+            </div>
+        }
 
         <br />
         <button class="add-btn" type="submit">Save</button>
+
     </EditForm>
 </section>
+
 @code {
+
     WorkoutSession model = new()
     {
         Date = DateTime.Today
     };
 
-    async Task SaveWorkout()
+    List<WorkoutSession> templates = new();
+
+    // Vald mall – 0 betyder ingen mall vald
+    int selectedTemplateId = 0;
+
+    ApplicationUser? user;
+
+
+    protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await userManager.GetUserAsync(authState.User);
+        user = await userManager.GetUserAsync(authState.User);
 
+        // Hämta användarens mallar för dropdown
+        templates = await db.WorkoutSessions
+            .Include(w => w.WorkoutExercises)
+            .Where(w => w.UserId == user!.Id && w.IsTemplate)
+            .OrderBy(w => w.Title)
+            .ToListAsync();
+    }
+
+
+    async Task SaveWorkout()
+    {
         model.UserId = user!.Id;
         model.CreatedAt = DateTime.Now;
+        model.IsTemplate = false;
 
         db.WorkoutSessions.Add(model);
         await db.SaveChangesAsync();
 
+        // Om en mall valts – kopiera övningar från mallen till det nya passet
+        if (selectedTemplateId != 0)
+        {
+            var template = await db.WorkoutSessions
+                .Include(w => w.WorkoutExercises)
+                .FirstOrDefaultAsync(w => w.Id == selectedTemplateId);
+
+            if (template != null)
+            {
+                foreach (var we in template.WorkoutExercises)
+                {
+                    db.WorkoutExercises.Add(new WorkoutExercise
+                    {
+                        WorkoutSessionId = model.Id,
+                        ExerciseId = we.ExerciseId
+                    });
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
+
         nav.NavigateTo($"/dashboard?created={model.Id}");
     }
+
 }

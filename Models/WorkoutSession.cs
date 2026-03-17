@@ -25,6 +25,9 @@ namespace GymTracker.Models
 
         // Hämtar exercises som är kopplade till passet
         public List<WorkoutExercise> WorkoutExercises { get; set; } = new();
+        
+        // Gör träningspasset till mall
+        public bool IsTemplate { get; set; } = false;
 
     }
 }

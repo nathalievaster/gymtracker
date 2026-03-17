@@ -18,20 +18,15 @@
 
 <!-- Skapa ny mall -->
 <div class="card">
-
     <h3>Create new template</h3>
-
     <div class="form-group">
         <input placeholder="Template name, e.g. Push day..." @bind="newTemplateName" />
     </div>
-
     <button class="add-btn" @onclick="CreateTemplate">Create</button>
-
     @if (!string.IsNullOrEmpty(createMessage))
     {
         <p class="message">@createMessage</p>
     }
-
 </div>
 
 <!-- Lista alla mallar -->
@@ -48,27 +43,20 @@ else
     @foreach (var t in templates)
     {
         <div class="exercise-card">
-
             <!-- Mall-header med namn, use och delete -->
             <div class="exercise-header">
-
                 <h5>
                     @t.Title
                     <span class="template-badge">Template</span>
                 </h5>
-
                 <div style="display:flex; gap:6px;">
-
                     <button class="add-btn small" @onclick="() => UseTemplate(t.Id)">
                         Use template
                     </button>
-
                     <button class="undo-btn small" @onclick="() => DeleteTemplate(t.Id)">
                         Delete
                     </button>
-
                 </div>
-
             </div>
 
             <!-- Lista övningar i mallen -->
@@ -79,7 +67,6 @@ else
             else
             {
                 <table class="sets-table">
-
                     <thead>
                         <tr>
                             <th>Exercise</th>
@@ -100,10 +87,8 @@ else
                             </tr>
                         }
                     </tbody>
-
                 </table>
             }
-
             <!-- Knapp för att lägga till övning i denna mall -->
             <button class="add-btn small" @onclick="() => OpenExerciseModal(t.Id)">
                 Add exercise
@@ -117,59 +102,55 @@ else
 @if (showExerciseModal)
 {
     <div class="modal-overlay">
-
         <div class="modal">
 
             <h3>Add exercise</h3>
 
-            <!-- Sökruta som filtrerar övningar i realtid -->
             <input type="text"
                    placeholder="Search exercises..."
                    value="@exerciseSearch"
                    @oninput="OnExerciseSearch"
                    class="search-input" />
 
-            <!-- Filtrerad lista visas när man skrivit något -->
             @if (!string.IsNullOrWhiteSpace(exerciseSearch))
             {
                 <div class="exercise-search-results">
-
                     @foreach (var ex in allExercises.Where(e =>
                         e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
                     {
-                        <div class="exercise-search-item @(selectedExerciseId == ex.Id ? "selected" : "")"
+                        <div class="exercise-search-item @(selectedExerciseIds.Contains(ex.Id) ? "selected" : "")"
                              @onclick="() => SelectExercise(ex)">
+                            <span class="exercise-check">@(selectedExerciseIds.Contains(ex.Id) ? "✓" : "")</span>
                             @ex.Name
                         </div>
                     }
-
                 </div>
             }
 
-            <!-- Visar vald övning -->
-            @if (selectedExerciseId != 0)
+            @if (selectedExercises.Any())
             {
-                <p class="selected-exercise-label">✓ @selectedExerciseName</p>
+                <div class="selected-chips">
+                    @foreach (var kvp in selectedExercises)
+                    {
+                        <span class="chip">
+                            @kvp.Value
+                            <button @onclick="() => { selectedExerciseIds.Remove(kvp.Key); selectedExercises.Remove(kvp.Key); }">×</button>
+                        </span>
+                    }
+                </div>
             }
 
-            <br />
-
             <b>or create new</b>
-
             <input placeholder="Exercise name" @bind="newExerciseName" />
-
             <br /><br />
-
             <button class="add-btn" @onclick="AddExerciseToTemplate">
                 Add
             </button>
-
             <button class="undo-btn" @onclick="CloseExerciseModal">
                 Cancel
             </button>
 
         </div>
-
     </div>
 }
 
@@ -185,8 +166,8 @@ else
     // Variabler för övningssökning i modal
     bool showExerciseModal = false;
     int activeTemplateId = 0;
-    int selectedExerciseId = 0;
-    string selectedExerciseName = "";
+    HashSet<int> selectedExerciseIds = new();
+    Dictionary<int, string> selectedExercises = new();
     string exerciseSearch = "";
     string newExerciseName = "";
 
@@ -250,8 +231,8 @@ else
         activeTemplateId = templateId;
         showExerciseModal = true;
         exerciseSearch = "";
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
+        selectedExerciseIds = new();
+        selectedExercises = new();
         newExerciseName = "";
     }
 
@@ -261,8 +242,8 @@ else
         showExerciseModal = false;
         activeTemplateId = 0;
         exerciseSearch = "";
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
+        selectedExerciseIds = new();
+        selectedExercises = new();
         newExerciseName = "";
     }
 
@@ -270,50 +251,58 @@ else
     void OnExerciseSearch(ChangeEventArgs e)
     {
         exerciseSearch = e.Value?.ToString() ?? "";
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
     }
 
     // Väljer en övning från sökresultaten
     void SelectExercise(Exercise ex)
     {
-        selectedExerciseId = ex.Id;
-        selectedExerciseName = ex.Name;
-        exerciseSearch = "";
+        if (selectedExerciseIds.Contains(ex.Id))
+        {
+            selectedExerciseIds.Remove(ex.Id);
+            selectedExercises.Remove(ex.Id);
+        }
+        else
+        {
+            selectedExerciseIds.Add(ex.Id);
+            selectedExercises[ex.Id] = ex.Name;
+        }
     }
-
     // Lägger till övning i aktiv mall
     async Task AddExerciseToTemplate()
     {
         if (activeTemplateId == 0) return;
 
-        Exercise? exercise = null;
-
-        if (selectedExerciseId != 0)
-            exercise = db.Exercises.FirstOrDefault(e => e.Id == selectedExerciseId);
-
-        if (!string.IsNullOrWhiteSpace(newExerciseName))
+        // Lägg till alla förbockade övningar
+        foreach (var id in selectedExerciseIds)
         {
-            exercise = new Exercise { Name = newExerciseName.Trim() };
-            db.Exercises.Add(exercise);
-            await db.SaveChangesAsync();
+            var exercise = db.Exercises.FirstOrDefault(e => e.Id == id);
+            if (exercise == null) continue;
 
-            // Uppdatera övningslistan med den nya övningen
-            allExercises = await db.Exercises.OrderBy(e => e.Name).ToListAsync();
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = activeTemplateId,
+                ExerciseId = exercise.Id
+            });
         }
 
-        if (exercise == null) return;
-
-        db.WorkoutExercises.Add(new WorkoutExercise
+        // Skapa och lägg till ny övning om namn angivits
+        if (!string.IsNullOrWhiteSpace(newExerciseName))
         {
-            WorkoutSessionId = activeTemplateId,
-            ExerciseId = exercise.Id
-        });
+            var newExercise = new Exercise { Name = newExerciseName.Trim() };
+            db.Exercises.Add(newExercise);
+            await db.SaveChangesAsync();
+
+            allExercises = await db.Exercises.OrderBy(e => e.Name).ToListAsync();
+
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = activeTemplateId,
+                ExerciseId = newExercise.Id
+            });
+        }
 
         await db.SaveChangesAsync();
-
         CloseExerciseModal();
-
         await LoadTemplates();
     }
 

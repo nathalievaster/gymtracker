@@ -29,27 +29,27 @@
 
         <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
-            <ValidationSummary class="error-summary" />
+            
 
             <!-- EMAIL -->
             <div class="input-group">
                 <label>Email</label>
                 <InputText @bind-Value="Input.Email" class="input" placeholder="name@email.com" />
-                <ValidationMessage For="() => Input.Email" class="error" />
+                <ValidationMessage style="color: red" For="() => Input.Email" class="error" />
             </div>
 
             <!-- PASSWORD -->
             <div class="input-group">
                 <label>Password</label>
                 <InputText type="password" @bind-Value="Input.Password" class="input" placeholder="password" />
-                <ValidationMessage For="() => Input.Password" class="error" />
+                <ValidationMessage style="color: red" For="() => Input.Password" class="error" />
             </div>
 
             <!-- CONFIRM -->
             <div class="input-group">
                 <label>Confirm password</label>
                 <InputText type="password" @bind-Value="Input.ConfirmPassword" class="input" placeholder="confirm password" />
-                <ValidationMessage For="() => Input.ConfirmPassword" class="error" />
+                <ValidationMessage style="color: red" For="() => Input.ConfirmPassword" class="error" />
             </div>
 
             <button type="submit" class="add-btn">Create account</button>
@@ -59,11 +59,11 @@
             </div>
 
         </EditForm>
-
+<!--
         <div class="external-login">
             <p>Or register with</p>
             <ExternalLoginPicker />
-        </div>
+        </div> -->
 
     </div>
 

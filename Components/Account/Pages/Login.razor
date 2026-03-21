@@ -24,20 +24,19 @@
 
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
             <DataAnnotationsValidator />
-            <ValidationSummary class="error-summary" />
 
             <!-- EMAIL -->
             <div class="input-group">
                 <label>Email</label>
                 <InputText @bind-Value="Input.Email" class="input" autocomplete="username" placeholder="name@email.com" />
-                <ValidationMessage For="() => Input.Email" class="error" />
+                <ValidationMessage style="color: red" For="() => Input.Email" class="error" />
             </div>
 
             <!-- PASSWORD -->
             <div class="input-group">
                 <label>Password</label>
                 <InputText type="password" @bind-Value="Input.Password" class="input" autocomplete="current-password" placeholder="password" />
-                <ValidationMessage For="() => Input.Password" class="error" />
+                <ValidationMessage style="color: red" For="() => Input.Password" class="error" />
             </div>
 
             <!-- REMEMBER -->
@@ -61,12 +60,11 @@
 
         </EditForm>
 
-        <!-- EXTERNAL LOGIN -->
+        <!-- EXTERNAL LOGIN 
         <div class="external-login">
             <p>Or log in with</p>
             <ExternalLoginPicker />
-        </div>
-
+        </div> -->
     </div>
 
 </div>

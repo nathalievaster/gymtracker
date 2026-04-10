@@ -44,6 +44,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -114,6 +116,5 @@ using (var dbScope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-Console.WriteLine("CONN: " + connectionString);
 
 app.Run();

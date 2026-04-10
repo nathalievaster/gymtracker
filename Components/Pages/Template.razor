@@ -60,7 +60,7 @@ else
             </div>
 
             <!-- Lista övningar i mallen -->
-            @if (!t.WorkoutExercises.Any())
+            @if (t.WorkoutExercises == null || !t.WorkoutExercises.Any())
             {
                 <p class="empty">No exercises yet</p>
             }
@@ -75,7 +75,7 @@ else
                     </thead>
 
                     <tbody>
-                        @foreach (var we in t.WorkoutExercises)
+                        @foreach (var we in t.WorkoutExercises ?? new List<WorkoutExercise>())
                         {
                             <tr>
                                 <td>@we.Exercise?.Name</td>
@@ -106,17 +106,14 @@ else
 
             <h3>Add exercise</h3>
 
-            <input type="text"
-                   placeholder="Search exercises..."
-                   value="@exerciseSearch"
-                   @oninput="OnExerciseSearch"
+            <input type="text" placeholder="Search exercises..." value="@exerciseSearch" @oninput="OnExerciseSearch"
                    class="search-input" />
 
             @if (!string.IsNullOrWhiteSpace(exerciseSearch))
             {
                 <div class="exercise-search-results">
                     @foreach (var ex in allExercises.Where(e =>
-                        e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
                     {
                         <div class="exercise-search-item @(selectedExerciseIds.Contains(ex.Id) ? "selected" : "")"
                              @onclick="() => SelectExercise(ex)">
@@ -127,14 +124,15 @@ else
                 </div>
             }
 
-            @if (selectedExercises.Any())
+            @if (selectedExercises != null && selectedExercises.Any())
             {
                 <div class="selected-chips">
                     @foreach (var kvp in selectedExercises)
                     {
                         <span class="chip">
                             @kvp.Value
-                            <button @onclick="() => { selectedExerciseIds.Remove(kvp.Key); selectedExercises.Remove(kvp.Key); }">×</button>
+                            <button
+                            @onclick="() => { selectedExerciseIds.Remove(kvp.Key); selectedExercises.Remove(kvp.Key); }">×</button>
                         </span>
                     }
                 </div>
@@ -173,11 +171,35 @@ else
 
     ApplicationUser? user;
 
+    bool EnsureUser()
+    {
+        if (user == null || string.IsNullOrEmpty(user.Id))
+        {
+            nav.NavigateTo("/login");
+            return false;
+        }
+        return true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User?.Identity?.IsAuthenticated != true)
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
         user = await userManager.GetUserAsync(authState.User);
+
+        var userId = user?.Id;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
 
         await LoadTemplates();
 
@@ -190,12 +212,25 @@ else
     // Hämtar alla mallar med övningar
     async Task LoadTemplates()
     {
-        templates = await db.WorkoutSessions
-            .Include(w => w.WorkoutExercises)
-            .ThenInclude(we => we.Exercise)
-            .Where(w => w.UserId == user!.Id && w.IsTemplate)
-            .OrderBy(w => w.Title)
-            .ToListAsync();
+        if (user == null || string.IsNullOrEmpty(user.Id))
+        {
+            templates = new List<WorkoutSession>();
+            return;
+        }
+
+        try
+        {
+            templates = await db.WorkoutSessions
+                .Include(w => w.WorkoutExercises)
+                .ThenInclude(we => we.Exercise)
+                .Where(w => w.UserId == user.Id && w.IsTemplate)
+                .OrderBy(w => w.Title)
+                .ToListAsync();
+        }
+        catch
+        {
+            templates = new List<WorkoutSession>();
+        }
     }
 
     // Skapar en ny tom mall

@@ -136,7 +136,7 @@ namespace GymTracker.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("WorkoutExerciseId")
                         .HasColumnType("integer");
@@ -204,10 +204,10 @@ namespace GymTracker.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsTemplate")
                         .HasColumnType("boolean");

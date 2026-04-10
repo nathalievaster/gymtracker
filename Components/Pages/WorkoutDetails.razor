@@ -22,291 +22,163 @@
 }
 else
 {
-    <div class="workout-top">
+    <div class="workout-page">
 
-        <button class="undo-btn back-btn" @onclick="GoBack">Back</button>
+        <!-- SIDEBAR -->
+        <aside class="workout-sidebar">
 
-    </div>
+            <button class="back-btn" @onclick="GoBack">← Back</button>
 
-    <div class="workout-header">
-
-        <h2>@workout.Title</h2>
-
-        <div class="workout-meta">
-            <span>@workout.Date.ToShortDateString()</span>
-            @if (workout.IsTemplate)
-            {
-                <span class="template-badge">Template</span>
-            }
-        </div>
-
-        @if (!string.IsNullOrWhiteSpace(workout.Notes))
-        {
-            <p class="notes">Notes: @workout.Notes</p>
-        }
-
-        <div class="workout-stats">
-            <span>@workout.WorkoutExercises.Count exercises</span>
-            <span>@workout.WorkoutExercises.SelectMany(x => x.Sets).Count() sets</span>
-        </div>
-
-        <!-- Spara detta pass som mall -->
-        @if (!workout.IsTemplate)
-        {
-            <button class="add-btn" @onclick="SaveAsTemplate">
-                Save as template
-            </button>
-        }
-
-        <!-- Använd en mall för att lägga till övningar -->
-        @if (templates.Any())
-        {
-            <div class="template-select-row">
-
-                <select @bind="selectedTemplateId">
-                    <option value="0">Use template...</option>
-                    @foreach (var t in templates)
-                    {
-                        <option value="@t.Id">@t.Title</option>
-                    }
-                </select>
-
-                @if (selectedTemplateId != 0)
+            <div class="sidebar-title-block">
+                <h2>@workout.Title</h2>
+                <span class="workout-date">@workout.Date.ToShortDateString()</span>
+                @if (workout.IsTemplate)
                 {
-                    <button class="add-btn small" @onclick="ApplyTemplate">
-                        Apply
-                    </button>
+                    <span class="template-badge">Template</span>
                 }
-
+                <div class="workout-stats">
+                    <span>@workout.WorkoutExercises.Count exercises</span>
+                    <span>·</span>
+                    <span>@workout.WorkoutExercises.SelectMany(x => x.Sets).Count() sets</span>
+                </div>
             </div>
-        }
 
-        <button class="add-btn big" @onclick="OpenExerciseModal">
-            Add exercise
-        </button>
-
-    </div>
-
-    <h4 class="section-title">Exercises</h4>
-
-    @if (!workout.WorkoutExercises.Any())
-    {
-        <p class="empty">No exercises yet</p>
-    }
-    else
-    {
-        <div class="exercise-grid">
-            @foreach (var we in workout.WorkoutExercises)
+            @if (!string.IsNullOrWhiteSpace(workout.Notes))
             {
-                <div class="exercise-card">
+                <p class="sidebar-notes">@workout.Notes</p>
+            }
 
-                    <div class="exercise-header">
-                        <h5>@we.Exercise?.Name</h5>
+            <hr class="sidebar-divider" />
 
-                        <button class="undo-btn small" @onclick="() => DeleteExercise(we.Id)">
-                            Delete
-                        </button>
-                    </div>
+            <button class="btn-orange" @onclick="OpenExerciseModal">+ Add exercise</button>
 
-                    @if (!we.Sets.Any())
-                    {
-                        <p class="empty">No sets yet</p>
-                    }
-                    else
-                    {
-                        <table class="sets-table">
-
-                            <thead>
-                                <tr>
-                                    <th>Set</th>
-                                    <th>Repetitions</th>
-                                    <th>Weight</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @{
-                                    int index = 1;
-                                }
-
-                                @foreach (var s in we.Sets)
-                                {
-                                    <tr>
-                                        <td>#@index</td>
-                                        <td>@s.Reps</td>
-                                        <td>@s.Weight kg</td>
-                                    </tr>
-
-                                    index++;
-                                }
-                            </tbody>
-
-                        </table>
-                    }
-
-                    @if (activeSetExerciseId == we.Id)
-                    {
-                        <div class="add-set-row">
-
-                            <input type="number" placeholder="Reps" @bind="newReps" />
-
-                            <input type="number" placeholder="Weight" @bind="newWeight" />
-
-                            <button class="add-btn small" @onclick="() => SaveSet(we.Id)">
-                                Save
-                            </button>
-
-                            <button class="undo-btn small" @onclick="CancelSet">
-                                Cancel
-                            </button>
-
-                        </div>
-                    }
-                    else
-                    {
-                        <button class="add-btn small" @onclick="() => StartAddSet(we.Id)">
-                            Add set
-                        </button>
-                    }
-
-                    <div class="media-upload">
-
-                        <div class="file-upload">
-
-                            <!-- InputFile är helt dold, triggas via JS för att undvika native styling -->
-                            <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
-
-                            <!-- Egen knapp som triggar filväljaren via JS interop -->
-                            <button class="add-btn small" @onclick="() => TriggerFileInput(we.Id)">
-                                Add media
-                            </button>
-
-                        </div>
-
-                        <!-- Note och Upload visas bara när en fil är vald för detta exercise -->
-                        @if (activeMediaExerciseId == we.Id)
+            @if (templates.Any())
+            {
+                <hr class="sidebar-divider" />
+                <p class="sidebar-hint">Already have a template? Apply it to prefill this workout.</p>
+                <div class="template-select-row">
+                    <select @bind="selectedTemplateId">
+                        <option value="0">Choose a template...</option>
+                        @foreach (var t in templates)
                         {
-                            <InputText placeholder="Note..." @bind-Value="mediaNote" class="media-note-input" />
-
-                            <button class="add-btn" @onclick="() => SaveMedia(we.Id)">
-                                Upload
-                            </button>
+                            <option value="@t.Id">@t.Title</option>
                         }
+                    </select>
+                    @if (selectedTemplateId != 0)
+                    {
+                        <button class="btn-orange small" @onclick="ApplyTemplate">Apply</button>
+                    }
+                </div>
+            }
 
-                    </div>
+            @if (!workout.IsTemplate)
+            {
+                <hr class="sidebar-divider" />
+                <p class="sidebar-hint">Happy with this workout? Save it as a template to reuse it later.</p>
+                <button class="btn-outline" @onclick="SaveAsTemplate">Save as template</button>
+            }
 
-                    <!-- Mediagrid med bild/video, note, radera-knapp och klick för förstoring -->
-                    <div class="media-grid">
+        </aside>
 
-                        @foreach (var media in we.Media)
-                        {
-                            <div class="media-item">
+        <!-- MAIN CONTENT -->
+        <main class="workout-main">
 
-                                @if (media.MediaType == "image")
-                                {
-                                    <!-- Klick på bilden öppnar lightbox -->
-                                    <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)"
-                                         style="cursor:pointer" />
-                                }
-                                else
-                                {
-                                    <video controls>
-                                        <source src="@media.FilePath">
-                                    </video>
-                                }
+            <h4 class="section-title">Exercises</h4>
 
-                                <p class="media-note">@media.Note</p>
+            @if (!workout.WorkoutExercises.Any())
+            {
+                <p class="empty">No exercises yet – add one from the sidebar!</p>
+            }
+            else
+            {
+                <div class="exercise-grid">
+                    @foreach (var we in workout.WorkoutExercises)
+                    {
+                        <div class="exercise-card">
 
-                                <!-- Radera-knapp för enskild mediafil -->
-                                <button class="undo-btn small" @onclick="() => DeleteMedia(media.Id, media.FilePath)">
-                                    Delete
-                                </button>
-
+                            <div class="exercise-header">
+                                <h5>@we.Exercise?.Name</h5>
+                                <button class="undo-btn small" @onclick="() => DeleteExercise(we.Id)">Delete</button>
                             </div>
-                        }
 
-                    </div>
+                            @if (!we.Sets.Any())
+                            {
+                                <p class="empty">No sets yet</p>
+                            }
+                            else
+                            {
+                                <table class="sets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Set</th>
+                                            <th>Reps</th>
+                                            <th>Weight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ int index = 1; }
+                                        @foreach (var s in we.Sets)
+                                        {
+                                            <tr>
+                                                <td>#@index</td>
+                                                <td>@s.Reps</td>
+                                                <td>@s.Weight kg</td>
+                                            </tr>
+                                            index++;
+                                        }
+                                    </tbody>
+                                </table>
+                            }
 
-                </div>
-            }
-        </div>
-    }
-}
+                            @if (activeSetExerciseId == we.Id)
+                            {
+                                <div class="add-set-row">
+                                    <input type="number" placeholder="Reps" @bind="newReps" />
+                                    <input type="number" placeholder="Weight" @bind="newWeight" />
+                                    <button class="add-btn small" @onclick="() => SaveSet(we.Id)">Save</button>
+                                    <button class="undo-btn small" @onclick="CancelSet">Cancel</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="add-btn small" @onclick="() => StartAddSet(we.Id)">Add set</button>
+                            }
 
-<!-- Lightbox modal för förstoring av bild -->
-@if (lightboxOpen)
-{
-    <div class="lightbox-backdrop" @onclick="CloseLightbox">
+                            <div class="media-upload">
+                                <div class="file-upload">
+                                    <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
+                                    <button class="add-btn small" @onclick="() => TriggerFileInput(we.Id)">Add media</button>
+                                </div>
+                                @if (activeMediaExerciseId == we.Id)
+                                {
+                                    <InputText placeholder="Note..." @bind-Value="mediaNote" class="media-note-input" />
+                                    <button class="add-btn" @onclick="() => SaveMedia(we.Id)">Upload</button>
+                                }
+                            </div>
 
-        <div class="lightbox-content" @onclick:stopPropagation>
+                            <div class="media-grid">
+                                @foreach (var media in we.Media)
+                                {
+                                    <div class="media-item">
+                                        @if (media.MediaType == "image")
+                                        {
+                                            <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)" style="cursor:pointer" />
+                                        }
+                                        else
+                                        {
+                                            <video controls><source src="@media.FilePath"></video>
+                                        }
+                                        <p class="media-note">@media.Note</p>
+                                        <button class="undo-btn small" @onclick="() => DeleteMedia(media.Id, media.FilePath)">Delete</button>
+                                    </div>
+                                }
+                            </div>
 
-            <img src="@lightboxSrc" />
-
-            @if (!string.IsNullOrWhiteSpace(lightboxNote))
-            {
-                <p class="lightbox-note">@lightboxNote</p>
-            }
-
-            <button class="undo-btn" @onclick="CloseLightbox">Close</button>
-
-        </div>
-
-    </div>
-}
-
-@if (showExerciseModal)
-{
-    <div class="modal-backdrop">
-
-        <div class="modal-box">
-
-            <h3>Add exercise</h3>
-
-            <!-- Sökruta som filtrerar övningar i realtid -->
-            <input type="text" placeholder="Search exercises..." value="@exerciseSearch" @oninput="OnExerciseSearch"
-                   class="search-input" />
-
-            <!-- Filtrerad lista visas när man skrivit något -->
-            @if (!string.IsNullOrWhiteSpace(exerciseSearch))
-            {
-                <div class="exercise-search-results">
-
-                    @foreach (var ex in allExercises.Where(e =>
-                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        <div class="exercise-search-item @(selectedExerciseId == ex.Id ? "selected" : "")"
-                             @onclick="() => SelectExercise(ex)">
-                            @ex.Name
                         </div>
                     }
-
                 </div>
             }
-
-            <!-- Visar vald övning -->
-            @if (selectedExerciseId != 0)
-            {
-                <p class="selected-exercise-label">✓ @selectedExerciseName</p>
-            }
-
-            <br />
-
-            <b>or create new</b>
-
-            <InputText @bind-Value="newExerciseName" placeholder="Exercise name" />
-
-            <br /><br />
-
-            <button class="add-btn" @onclick="AddExerciseToWorkout">
-                Add
-            </button>
-
-            <button class="undo-btn" @onclick="CloseExerciseModal">
-                Cancel
-            </button>
-
-        </div>
-
+        </main>
     </div>
 }
 

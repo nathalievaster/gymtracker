@@ -1,59 +1,158 @@
-.workout-header {
-    max-width: 600px;
-    margin: 0rem auto 2rem auto;
-    padding: 2rem;
-    background: #173B45;
-    border-radius: 16px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+/* ── Sidlayout ── */
+.workout-page {
+    display: flex;
+    gap: 0;
+    min-height: 100vh;
+    align-items: flex-start;
 }
 
-.workout-header h2 {
+/* ── Sidebar ── */
+.workout-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #173B45;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.sidebar-title-block h2 {
     color: #FF8225;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.workout-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
 }
 
 .workout-stats {
     display: flex;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
     justify-content: center;
-    gap: 1rem;
-    margin: 0.5rem;
-    opacity: 0.85;
+    flex-wrap: wrap;
+}
+
+.sidebar-notes {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.sidebar-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 130, 37, 0.2);
+    margin: 0;
+}
+
+.btn-orange {
+    background: #FF8225;
+    color: #173B45;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 16px;
     font-size: 0.9rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+}
+
+.btn-orange:hover {
+    background: #e06e18;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #FF8225;
+    border: 1px solid #FF8225;
+    border-radius: 30px;
+    padding: 7px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 130, 37, 0.1);
+}
+
+.template-select-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-select-row select {
+    border-radius: 20px;
+    padding: 6px 14px;
+    border: 1px solid #FF8225;
+    background: #173B45;
+    color: #FF8225;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* ── Main content ── */
+.workout-main {
+    flex: 1;
+    padding: 1.5rem;
+    min-width: 0;
 }
 
 .section-title {
-    text-align: center;
-    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--color-text-primary, #333);
 }
 
+/* ── Exercise grid ── */
 .exercise-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: 1fr; /* mobil */
+    grid-template-columns: 1fr;
 }
 
-/* Tablet */
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .exercise-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* Desktop */
-@media (min-width: 1200px) {
+@media (min-width: 1100px) {
     .exercise-grid {
         grid-template-columns: repeat(3, 1fr);
-        margin: 1em;
     }
 }
 
+/* ── Exercise card ── */
 .exercise-card {
-    width: 100%;
     padding: 1rem 1.2rem;
     background: #173B45;
     border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
     color: white;
 }
 
@@ -69,6 +168,7 @@
     margin: 0;
 }
 
+/* ── Sets table ── */
 .sets-table {
     width: 100%;
     border-collapse: collapse;
@@ -87,14 +187,17 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ── Add set row ── */
 .add-set-row {
     display: flex;
     gap: 0.4rem;
     margin-top: 0.6rem;
+    flex-wrap: wrap;
 }
 
 .add-set-row input {
     flex: 1;
+    min-width: 60px;
     padding: 6px;
     border-radius: 6px;
     border: none;
@@ -102,61 +205,37 @@
 
 .small {
     padding: 4px 10px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
+
+.back-btn {
+    background: #c0392b;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: fit-content;
+}
+
 
 .empty {
-    text-align: center;
     opacity: 0.7;
+    font-size: 0.9rem;
+    margin-top: 4px;
 }
 
-.workout-top {
-    display: flex;
-    align-items: flex-start;
-    margin: 1em;
-
-}
-
-/* Modal backdrop */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-/* Modal box */
-.modal-box {
-    background: #173B45;
-    padding: 2rem;
-    border-radius: 16px;
-    text-align: center;
-    max-width: 400px;
+.template-badge {
+    background: rgba(255, 130, 37, 0.2);
     color: #FF8225;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid #FF8225;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
 }
 
-/* Select */
-.modal-box select {
-    width: 100%;
-    padding: 0.4rem;
-    border-radius: 8px;
-    border: none;
-}
-
-/* Inputs inside modal */
-.modal-box input {
-    width: 100%;
-}
-
-/* Modal buttons */
-.modal-box button {
-    margin: 0.3rem;
-}
-
+/* ── Media ── */
 .media-upload {
     margin-top: 0.8rem;
     display: flex;
@@ -164,34 +243,17 @@
     gap: 0.6rem;
 }
 
-.file-upload {
-    position: relative;
-}
-
-/* DÖLJ INPUTFILE */
-.hidden-file-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    position: absolute;
-}
-
-/* Note input */
 .media-note-input {
     padding: 6px;
     border-radius: 8px;
     border: none;
+    width: 100%;
 }
 
-/* Media grid */
 .media-grid {
     margin-top: 0.8rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 0.6rem;
 }
 
@@ -206,7 +268,7 @@
 .media-item video {
     width: 100%;
     border-radius: 8px;
-    max-height: 120px;
+    max-height: 100px;
     object-fit: cover;
 }
 
@@ -216,7 +278,7 @@
     opacity: 0.8;
 }
 
-/* Lightbox backdrop – mörk overlay som täcker hela skärmen */
+/* ── Lightbox ── */
 .lightbox-backdrop {
     position: fixed;
     inset: 0;
@@ -227,7 +289,6 @@
     z-index: 1000;
 }
 
-/* Lightbox innehåll – centrerad box med bild och note */
 .lightbox-content {
     display: flex;
     flex-direction: column;
@@ -249,7 +310,36 @@
     font-size: 1rem;
 }
 
-/* Dropdown-lista med sökresultat */
+/* ── Modal ── */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #173B45;
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    color: #FF8225;
+}
+
+.modal-box input {
+    width: 100%;
+}
+
+.modal-box button {
+    margin: 0.3rem;
+}
+
+/* ── Sökresultat ── */
 .exercise-search-results {
     display: flex;
     flex-direction: column;
@@ -263,54 +353,56 @@
 .exercise-search-item {
     padding: 8px 12px;
     cursor: pointer;
-    transition: background 0.15s;
     border-radius: 8px;
+    transition: background 0.15s;
+    color: white;
 }
 
-.exercise-search-item:hover {
-    background: rgba(255, 130, 37, 0.15);
-}
+.exercise-search-item:hover { background: rgba(255, 130, 37, 0.15); }
+.exercise-search-item.selected { background: rgba(255, 130, 37, 0.3); }
 
-.exercise-search-item.selected {
-    background: rgba(255, 130, 37, 0.3);
-}
-
-/* Visar vald övning under sökrutan */
 .selected-exercise-label {
     color: #FF8225;
     font-size: 0.9rem;
     margin-top: 6px;
 }
 
-/* Badge som visar att ett pass är en mall */
-.template-badge {
-    background: rgba(255, 130, 37, 0.2);
-    color: #FF8225;
-    border: 1px solid #FF8225;
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
     border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.75rem;
-    margin-left: 8px;
+    border: 1px solid rgba(255, 130, 37, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    margin-bottom: 6px;
 }
 
-/* Rad med malldropdown och Apply-knapp */
-.template-select-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
+/* ── Mobil: sidebar ovanför ── */
+@media (max-width: 700px) {
+    .workout-page {
+        flex-direction: column;
+    }
 
-.template-select-row select {
-    border-radius: 20px;
-    max-width: 500px;
-    margin: 0 auto;
-    margin-bottom: 1em;
-    padding: 0.45rem 1.2rem;
-    border-radius: 30px;
-    border: 1px solid #FF8225;
-    background: #173B45;
-    color: #FF8225;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
+    .workout-sidebar {
+        width: 100%;
+        min-height: unset;
+        position: static;
+        border-radius: 0;
+        margin-top: 1em;
+    }
+
+    .workout-main {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .exercise-grid {
+        width: 100%;
+    }
+
+    .exercise-card {
+        margin: 0;
+        width: 100%;
+    }
 }

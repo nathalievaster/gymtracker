@@ -98,12 +98,8 @@
     </select>
 
     <!-- Sökruta – listan filtreras vid varje knapptryckning -->
-    <input
-        type="text"
-        placeholder="Search workouts..."
-        value="@searchQuery"
-        @oninput="OnSearchInput"
-        class="search-input" />
+    <input type="text" placeholder="Search workouts..." value="@searchQuery" @oninput="OnSearchInput"
+           class="search-input" />
 
 </div>
 
@@ -215,9 +211,9 @@ else
         totalWorkouts = workouts!.Count;
 
         totalExercises = db.WorkoutExercises
-            .Include(we => we.WorkoutSession)
-            .Where(we => we.WorkoutSession.UserId == user.Id)
-            .Count();
+        .Include(we => we.WorkoutSession)
+        .Where(we => we.WorkoutSession.UserId == user.Id && !we.WorkoutSession.IsTemplate)
+        .Count();
 
         // Beräkna träningsfrekvens
         if (workouts.Any())
@@ -250,7 +246,7 @@ else
         var user = await userManager.GetUserAsync(authState.User);
 
         var query = db.WorkoutSessions
-            .Where(w => w.UserId == user!.Id);
+            .Where(w => w.UserId == user!.Id && !w.IsTemplate);
 
         if (selectedFilter == "7")
             query = query.Where(w => w.Date >= DateTime.Today.AddDays(-7));

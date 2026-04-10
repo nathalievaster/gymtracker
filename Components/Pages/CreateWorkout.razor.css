@@ -7,9 +7,8 @@ h1 {
 .card {
     max-width: 550px;
     width: calc(100% - 2rem);
-    /* respekterar viewport-kanter */
-    margin: 2rem auto;
-    padding: 2rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -35,12 +34,11 @@ label {
 .form-group textarea {
     width: 100%;
     min-width: 0;
-    /* tar bort min-width som bröt layouten */
     box-sizing: border-box;
 }
 
 ::deep textarea {
-    min-height: 220px;
+    min-height: 80px;
 }
 
 .form-group select {

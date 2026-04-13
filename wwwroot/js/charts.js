@@ -63,6 +63,7 @@ window.renderProgressionChart = (labels, values) => {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     labels: { color: 'white' }

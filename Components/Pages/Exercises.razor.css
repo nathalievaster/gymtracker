@@ -1,6 +1,6 @@
 .card {
-    max-width: 500px;
-    margin: 2rem auto;
+    margin: 0.5em auto;
+    width: 95%;
     padding: 2rem;
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -71,15 +71,6 @@ p {
         opacity: 0;
     }
 }
-.chart-card {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #173B45;
-    border-radius: 14px;
-    color: white;
-}
-
 select {
     padding: 0.45rem 1.2rem;
     border-radius: 30px;
@@ -104,4 +95,161 @@ select:hover {
 option {
     background: #173B45;
     color: white;
+}
+
+.exercise-page {
+    display: flex;
+    gap: 0;
+    min-height: 100vh;
+    align-items: flex-start;
+}
+
+.exercise-sidebar {
+    min-width: 300px;
+    background: #173B45;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    margin: 1em;
+}
+
+.exercise-sidebar h1 {
+    color: #FF8225;
+    font-size: 1.1rem;
+    text-align: center;
+    margin: 0;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 130, 37, 0.2);
+    margin: 0;
+}
+
+.ex-section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ex-item {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #FF8225;
+    font-size: 0.85rem;
+}
+
+.exercise-main {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.progression-toggle {
+    background: #173B45;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.progression-toggle:hover {
+    background: #1e4d5a;
+}
+
+.progression-toggle-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.progression-title {
+    color: #FF8225;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.progression-sub {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.progression-chevron {
+    color: #FF8225;
+    font-size: 0.9rem;
+    transition: transform 0.2s;
+}
+
+.progression-chevron.open {
+    transform: rotate(180deg);
+}
+
+.chart-card {
+    background: #173B45;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: white;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chart-header h3 {
+    color: #FF8225;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.create-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.admin-badge {
+    background: rgba(255, 130, 37, 0.15);
+    color: #FF8225;
+    border: 1px solid rgba(255, 130, 37, 0.3);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 700px) {
+    .exercise-page {
+        flex-direction: column;
+    }
+
+    .exercise-sidebar {
+        width: 100%;
+        min-height: unset;
+        position: static;
+    }
 }

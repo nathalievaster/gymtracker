@@ -14,109 +14,140 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JS
 
-<h1>Exercise library</h1>
+<div class="exercise-page">
 
-<!-- Progressionsgraf: maxvikt per pass för vald övning -->
-<div class="chart-card">
+    <!-- SIDEBAR -->
+    <aside class="exercise-sidebar">
 
-    <h3>Progression</h3>
+        <h1>Exercise library</h1>
 
-    <!-- Dropdown för att välja övning att visa i grafen -->
-    <select value="@selectedExerciseId" @onchange="OnExerciseSelected">
-        <option value="0">Select exercise...</option>
+        <hr class="sidebar-divider" />
 
-        @foreach (var ex in allExercisesForChart)
+        <span class="ex-section-label">Global exercises</span>
+
+        @if (!globalExercises.Any())
         {
-            <option value="@ex.Id">@ex.Name</option>
+            <p class="empty">No global exercises</p>
         }
-    </select>
+        else
+        {
+            <div class="ex-list">
+                @foreach (var ex in globalExercises)
+                {
+                    <div class="ex-item">
+                        <span>@ex.Name</span>
+                        @if (isAdmin)
+                        {
+                            <button class="undo-btn small" @onclick="() => DeleteGlobal(ex.Id)">Delete</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
 
-    @if (chartHasData)
-    {
-        <canvas id="progressionChart"></canvas>
-    }
-    else if (selectedExerciseId != 0)
-    {
-        <p class="empty">No data yet for this exercise.</p>
-    }
+        <hr class="sidebar-divider" />
+
+        <span class="ex-section-label">My exercises</span>
+
+        @if (!myExercises.Any())
+        {
+            <p class="empty">No personal exercises</p>
+        }
+        else
+        {
+            <div class="ex-list">
+                @foreach (var ex in myExercises)
+                {
+                    <div class="ex-item">
+                        <span>@ex.Name</span>
+                        <button class="undo-btn small" @onclick="() => DeletePersonal(ex.Id)">Delete</button>
+                    </div>
+                }
+            </div>
+        }
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="exercise-main">
+
+        <!-- Progression – kollapsbar -->
+        <div class="progression-toggle" @onclick="ToggleProgression">
+            <div class="progression-toggle-left">
+                <span class="progression-title">Track progression</span>
+                <span class="progression-sub">Select an exercise to view your progress chart</span>
+            </div>
+            <span class="progression-chevron @(showProgression ? "open" : "")">▼</span>
+        </div>
+
+        @if (showProgression)
+        {
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Progression</h3>
+                    <select value="@selectedExerciseId" @onchange="OnExerciseSelected">
+                        <option value="0">Select exercise...</option>
+                        @foreach (var ex in allExercisesForChart)
+                        {
+                            <option value="@ex.Id">@ex.Name</option>
+                        }
+                    </select>
+                </div>
+
+                @if (chartHasData)
+                {
+                    <canvas id="progressionChart"></canvas>
+                }
+                else if (selectedExerciseId != 0)
+                {
+                    <p class="empty">No data yet for this exercise.</p>
+                }
+            </div>
+        }
+
+        <!-- Skapa-formulär -->
+        <div class="create-grid">
+
+            @if (isAdmin)
+            {
+                <section class="card">
+                    <span class="admin-badge">Admin only</span>
+                    <h3>Create global exercise</h3>
+                    <input placeholder="Exercise name" @bind="globalName" />
+                    <textarea placeholder="Description" @bind="globalDescription"></textarea>
+                    <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
+                    @if (!string.IsNullOrEmpty(globalMessage))
+                    {
+                        <p class="message">@globalMessage</p>
+                    }
+                </section>
+            }
+
+            <section class="card">
+                <h3>Create personal exercise</h3>
+                <input placeholder="Exercise name" @bind="personalName" />
+                <textarea placeholder="Description" @bind="personalDescription"></textarea>
+                <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
+                @if (!string.IsNullOrEmpty(personalMessage))
+                {
+                    <p class="message">@personalMessage</p>
+                }
+            </section>
+
+        </div>
+
+    </main>
 
 </div>
 
-@if (isAdmin)
-{
-    <section class="card">
-        <h3>Create GLOBAL exercise (admin)</h3>
-
-        <input placeholder="Exercise name" @bind="globalName" />
-        <textarea placeholder="Description" @bind="globalDescription"></textarea>
-
-        <br /><br />
-        <button class="add-btn" @onclick="CreateGlobalExercise">Create global</button>
-
-        @if (!string.IsNullOrEmpty(globalMessage))
-        {
-            <p class="message">@globalMessage</p>
-        }
-    </section>
-}
-
-<section class="card">
-    <h3>Create personal exercise</h3>
-
-    <input placeholder="Exercise name" @bind="personalName" />
-    <textarea placeholder="Description" @bind="personalDescription"></textarea>
-
-    <button class="add-btn" @onclick="CreatePersonalExercise">Create personal</button>
-
-    @if (!string.IsNullOrEmpty(personalMessage))
-    {
-        <p class="message">@personalMessage</p>
-    }
-</section>
-
-<h3>Global exercises</h3>
-
-@if (!globalExercises.Any())
-{
-    <p>No global exercises</p>
-}
-else
-{
-    <ul>
-        @foreach (var ex in globalExercises)
-        {
-            <li>
-                <b>@ex.Name</b>
-
-                @if (isAdmin)
-                {
-                    <button class="undo-btn" @onclick="() => DeleteGlobal(ex.Id)">Delete</button>
-                }
-            </li>
-        }
-    </ul>
-}
-
-<h3>My exercises</h3>
-
-@if (!myExercises.Any())
-{
-    <p>No personal exercises</p>
-}
-else
-{
-    <ul>
-        @foreach (var ex in myExercises)
-        {
-            <li>
-                <b>@ex.Name</b>
-                <button class="undo-btn" @onclick="() => DeletePersonal(ex.Id)">Delete</button>
-            </li>
-        }
-    </ul>
-}
-
 @code {
+    bool showProgression = false;
+
+    void ToggleProgression()
+    {
+        showProgression = !showProgression;
+    }
+
     List<Exercise> globalExercises = new();
     List<Exercise> myExercises = new();
 

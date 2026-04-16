@@ -177,11 +177,10 @@ h1, h2 {
 .sidebar-filters select {
     padding: 0.65rem 1rem;
     border-radius: 12px;
-    border: none;
-    background: #FF8225;
-    color: #173B45;
-    font-weight: 600;
-    font-size: 0.95rem;
+    border: 2px solid #FF8225;
+    background-color: transparent;
+    color: #FF8225;
+    font-size: 0.8rem;
     cursor: pointer;
 }
 
@@ -196,7 +195,7 @@ h1, h2 {
     border-radius: 12px;
     background: transparent;
     color: #FF8225;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
@@ -212,7 +211,6 @@ h1, h2 {
 }
 
 /* Sökresultat */
-
 .exercise-check {
     display: inline-block;
     width: 1rem;

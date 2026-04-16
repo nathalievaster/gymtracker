@@ -15,8 +15,6 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager nav
 
-<h1>Create workout</h1>
-
 <div class="dashboard-layout">
 
     <!-- SIDEBAR -->
@@ -78,6 +76,7 @@
     <!-- MAIN CONTENT -->
     <main class="dashboard-main">
         <section class="card create-card">
+            <h1>Create new workout</h1>
             <EditForm Model="model" OnValidSubmit="SaveWorkout">
                 <DataAnnotationsValidator />
                 <ValidationSummary />

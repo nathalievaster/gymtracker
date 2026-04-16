@@ -1,32 +1,45 @@
 .card {
     background: #173B45;
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 0.75rem auto 1rem;
     color: white;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    max-width: 650px;
-    margin: 1em auto;
+    gap: 0.5rem;
+    max-width: 520px;
 }
 
 .card h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    align-items: stretch;
+    margin: 0 1em;
 }
 
 .exercise-card {
     background: #173B45;
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
     color: white;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    max-width: 650px;
-    margin: 1em auto;
+    gap: 0.55rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
+    min-height: 100%;
+}
+
+.exercise-card > .add-btn {
+    margin-top: auto;
 }
 
 .exercise-header {
@@ -34,44 +47,53 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .exercise-header h5 {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.85rem;
 }
 
 .template-badge {
     background: rgba(255, 130, 37, 0.2);
     color: #FF8225;
     border: 1px solid #FF8225;
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.75rem;
-    margin-left: 8px;
+    border-radius: 16px;
+    padding: 1px 8px;
+    font-size: 0.68rem;
+    margin-left: 4px;
 }
 
 .sets-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
 }
 
 .sets-table th {
     text-align: left;
     color: #B8F2E6;
     font-weight: 600;
-    padding: 0.3rem 0.5rem;
+    padding: 0.25rem 0.35rem;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.78rem;
 }
 
 .sets-table td {
-    padding: 0.35rem 0.5rem;
+    padding: 0.28rem 0.35rem;
     color: #e0f4ef;
+    vertical-align: top;
 }
 
 .sets-table tr:hover td {
@@ -82,11 +104,11 @@ input[type="text"],
 input:not([type]) {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+    border-radius: 7px;
+    padding: 0.45rem 0.65rem;
     color: white;
     width: 100%;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     outline: none;
     transition: border-color 0.2s;
 }
@@ -102,13 +124,13 @@ input::placeholder {
 
 .message {
     color: #B8F2E6;
-    font-size: 0.88rem;
+    font-size: 0.8rem;
     margin: 0;
 }
 
 .empty {
     color: rgba(255,255,255,0.35);
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-style: italic;
     margin: 0;
 }
@@ -123,33 +145,104 @@ input::placeholder {
     z-index: 1000;
 }
 
-/* ── Modal box ── */
 .modal {
     background: #173B45;
-    padding: 2rem;
-    border-radius: 16px;
-    max-width: 420px;
+    padding: 1.35rem;
+    border-radius: 12px;
+    max-width: 380px;
     width: 90%;
     color: white;
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     animation: modalPop 0.25s ease;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.6rem;
 }
 
 .modal h3 {
-    margin: 0 0 0.25rem;
+    margin: 0 0 0.15rem;
+    font-size: 1rem;
 }
 
-/* ── Shared animation ── */
+.exercise-search-results {
+    max-height: 180px;
+    overflow-y: auto;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.exercise-search-item {
+    padding: 0.42rem 0.65rem;
+    cursor: pointer;
+    color: #e0f4ef;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+}
+
+.exercise-search-item:hover,
+.exercise-search-item.selected {
+    background: rgba(184, 242, 230, 0.15);
+    color: #B8F2E6;
+}
+
+.exercise-check {
+    display: inline-block;
+    width: 0.9rem;
+    color: #B8F2E6;
+    font-weight: bold;
+}
+
+.selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.chip {
+    background: rgba(184, 242, 230, 0.15);
+    border: 1px solid rgba(184, 242, 230, 0.4);
+    color: #B8F2E6;
+    border-radius: 99px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.chip button {
+    background: none;
+    border: none;
+    color: #B8F2E6;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+    line-height: 1;
+}
+
 @keyframes modalPop {
     from {
-        transform: scale(0.9);
+        transform: scale(0.92);
         opacity: 0;
     }
     to {
         transform: scale(1);
         opacity: 1;
+    }
+}
+
+@media (max-width: 1100px) {
+    .templates-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .templates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        max-width: 100%;
     }
 }

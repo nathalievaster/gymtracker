@@ -40,62 +40,64 @@ else if (!templates.Any())
 }
 else
 {
-    @foreach (var t in templates)
-    {
-        <div class="exercise-card">
-            <!-- Mall-header med namn, use och delete -->
-            <div class="exercise-header">
-                <h5>
-                    @t.Title
-                    <span class="template-badge">Template</span>
-                </h5>
-                <div style="display:flex; gap:6px;">
-                    <button class="add-btn small" @onclick="() => UseTemplate(t.Id)">
-                        Use template
-                    </button>
-                    <button class="undo-btn small" @onclick="() => DeleteTemplate(t.Id)">
-                        Delete
-                    </button>
+    <div class="templates-grid">
+        @foreach (var t in templates)
+        {
+            <div class="exercise-card">
+                <!-- Mall-header med namn, use och delete -->
+                <div class="exercise-header">
+                    <h5>
+                        @t.Title
+                        <span class="template-badge">Template</span>
+                    </h5>
+                    <div class="actions">
+                        <button class="add-btn small" @onclick="() => UseTemplate(t.Id)">
+                            Use template
+                        </button>
+                        <button class="undo-btn small" @onclick="() => DeleteTemplate(t.Id)">
+                            Delete
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Lista övningar i mallen -->
-            @if (t.WorkoutExercises == null || !t.WorkoutExercises.Any())
-            {
-                <p class="empty">No exercises yet</p>
-            }
-            else
-            {
-                <table class="sets-table">
-                    <thead>
-                        <tr>
-                            <th>Exercise</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var we in t.WorkoutExercises ?? new List<WorkoutExercise>())
-                        {
+                <!-- Lista övningar i mallen -->
+                @if (t.WorkoutExercises == null || !t.WorkoutExercises.Any())
+                {
+                    <p class="empty">No exercises yet</p>
+                }
+                else
+                {
+                    <table class="sets-table">
+                        <thead>
                             <tr>
-                                <td>@we.Exercise?.Name</td>
-                                <td>
-                                    <button class="undo-btn small" @onclick="() => RemoveExerciseFromTemplate(we.Id, t.Id)">
-                                        Remove
-                                    </button>
-                                </td>
+                                <th>Exercise</th>
+                                <th></th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            <!-- Knapp för att lägga till övning i denna mall -->
-            <button class="add-btn small" @onclick="() => OpenExerciseModal(t.Id)">
-                Add exercise
-            </button>
+                        </thead>
 
-        </div>
-    }
+                        <tbody>
+                            @foreach (var we in t.WorkoutExercises ?? new List<WorkoutExercise>())
+                            {
+                                <tr>
+                                    <td>@we.Exercise?.Name</td>
+                                    <td>
+                                        <button class="undo-btn small" @onclick="() => RemoveExerciseFromTemplate(we.Id, t.Id)">
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <!-- Knapp för att lägga till övning i denna mall -->
+                <button class="add-btn small" @onclick="() => OpenExerciseModal(t.Id)">
+                    Add exercise
+                </button>
+            </div>
+        }
+    </div>
 }
 
 <!-- Modal för att lägga till övning i en mall -->

@@ -1,6 +1,7 @@
-h1 {
+h1, h2 {
     text-align: center;
     margin-bottom: 1rem;
+    color: #FF8225;
 }
 
 /* kortet */
@@ -76,5 +77,58 @@ label {
 
     ::deep textarea {
         min-height: 160px;
+    }
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 420px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+}
+
+.workout-sidebar {
+    background: #173B45;
+    border-radius: 18px;
+    padding: 1rem;
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.sidebar-top {
+    margin-bottom: 1rem;
+}
+
+.create-card {
+    max-width: 720px;
+    margin: 0;
+    padding: 2rem;
+}
+
+@media (max-width: 900px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .workout-sidebar {
+        position: static;
+        max-height: none;
+    }
+
+    .create-card {
+        max-width: 100%;
     }
 }

@@ -43,6 +43,7 @@
 h1 {
     text-align: center;
     margin-bottom: 1.5rem;
+    color: #FF8225;
 }
 
 /* LAYOUT */
@@ -83,102 +84,6 @@ h1 {
     width: 100%;
 }
 
-.sidebar-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    margin-bottom: 1rem;
-}
-
-.sidebar-filters select {
-    padding: 0.65rem 1rem;
-    border-radius: 12px;
-    border: none;
-    background: #FF8225;
-    color: #173B45;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-}
-
-.sidebar-filters option {
-    background: #173B45;
-    color: white;
-}
-
-.search-input {
-    padding: 10px 14px;
-    border: 2px solid #FF8225;
-    border-radius: 12px;
-    background: transparent;
-    color: #FF8225;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.search-input::placeholder {
-    color: #FF8225;
-}
-
-.search-input:focus {
-    border-color: #FF8225;
-    box-shadow: 0 0 10px rgba(255, 130, 37, 0.5);
-    transform: scale(1.02);
-}
-
-.sidebar-list {
-    overflow-y: auto;
-    flex: 1;
-    padding-right: 0.2rem;
-}
-
-.sidebar-state {
-    text-align: center;
-    color: #d6d6d6;
-    margin-top: 1rem;
-}
-
-/* WORKOUT LIST */
-.workout-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.workout-list-item {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 14px;
-    padding: 0.85rem;
-    margin-bottom: 0.8rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.workout-list-main {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    cursor: pointer;
-}
-
-.workout-title {
-    color: #FF8225;
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.workout-date {
-    color: #d7d7d7;
-    font-size: 0.9rem;
-}
-
-.actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
 
 /* MAIN CONTENT */
 .dashboard-main {

@@ -1,6 +1,5 @@
 @page "/create-workout"
 @attribute [Authorize]
-
 @rendermode InteractiveServer
 
 @using GymTracker.Data
@@ -9,6 +8,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
 
 @inject ApplicationDbContext db
 @inject UserManager<ApplicationUser> userManager
@@ -17,46 +17,108 @@
 
 <h1>Create workout</h1>
 
-<section class="card">
-    <EditForm Model="model" OnValidSubmit="SaveWorkout">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<div class="dashboard-layout">
 
-        <div class="form-group">
-            <label>Title</label>
-            <InputText @bind-Value="model.Title" placeholder="Leg day, Upper body, Morning run..." />
+    <!-- SIDEBAR -->
+    <aside class="workout-sidebar">
+
+        <div class="sidebar-top">
+            <h2>My workouts</h2>
         </div>
 
-        <div class="form-group">
-            <label>Date</label>
-            <InputDate @bind-Value="model.Date" placeholder="Select workout date" />
+        <div class="sidebar-filters">
+            <select value="@selectedFilter" @onchange="ApplyFilter">
+                <option value="all">All time</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="year">This year</option>
+            </select>
+
+            <input type="text" placeholder="Search workouts..." value="@searchQuery" @oninput="OnSearchInput"
+                   class="search-input" />
         </div>
 
-        <div class="form-group">
-            <label>Notes</label>
-            <InputTextArea @bind-Value="model.Notes" placeholder="How did the workout feel?" />
-        </div>
-
-        <!-- Välj en mall att utgå ifrån (valfritt) -->
-        @if (templates.Any())
-        {
-            <div class="form-group">
-                <label>Use template (optional)</label>
-                <select @bind="selectedTemplateId">
-                    <option value="0">No template</option>
-                    @foreach (var t in templates)
+        <div class="sidebar-list">
+            @if (workouts == null)
+            {
+                <p class="sidebar-state">Loading workouts...</p>
+            }
+            else if (!FilteredWorkouts.Any())
+            {
+                <p class="sidebar-state">No workouts found.</p>
+            }
+            else
+            {
+                <ul class="workout-list">
+                    @foreach (var w in FilteredWorkouts)
                     {
-                        <option value="@t.Id">@t.Title</option>
+                        <li class="workout-list-item">
+                            <div class="workout-list-main" @onclick="() => GoToWorkout(w.Id)">
+                                <span class="workout-title">@w.Title</span>
+                                <span class="workout-date">@w.Date.ToShortDateString()</span>
+                            </div>
+
+                            <div class="actions">
+                                <button class="add-btn small" @onclick="() => GoToWorkout(w.Id)">
+                                    Open
+                                </button>
+
+                                <button class="undo-btn small" @onclick="() => DeleteWorkout(w.Id)">
+                                    Delete
+                                </button>
+                            </div>
+                        </li>
                     }
-                </select>
-            </div>
-        }
+                </ul>
+            }
+        </div>
 
-        <br />
-        <button class="add-btn" type="submit">Save</button>
+    </aside>
 
-    </EditForm>
-</section>
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main">
+        <section class="card create-card">
+            <EditForm Model="model" OnValidSubmit="SaveWorkout">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label>Title</label>
+                    <InputText @bind-Value="model.Title" placeholder="Leg day, Upper body, Morning run..." />
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <InputDate @bind-Value="model.Date" />
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <InputTextArea @bind-Value="model.Notes" placeholder="How did the workout feel?" />
+                </div>
+
+                <!-- Välj en mall att utgå ifrån (valfritt) -->
+                @if (templates.Any())
+                {
+                    <div class="form-group">
+                        <label>Use template (optional)</label>
+                        <select @bind="selectedTemplateId">
+                            <option value="0">No template</option>
+                            @foreach (var t in templates)
+                            {
+                                <option value="@t.Id">@t.Title</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <br />
+                <button class="add-btn" type="submit">Save</button>
+
+            </EditForm>
+        </section>
+    </main>
+</div>
 
 @code {
 
@@ -66,30 +128,119 @@
     };
 
     List<WorkoutSession> templates = new();
+    List<WorkoutSession>? workouts = new();
 
     // Vald mall – 0 betyder ingen mall vald
     int selectedTemplateId = 0;
 
+    string selectedFilter = "all";
+    string searchQuery = "";
+
     ApplicationUser? user;
 
+    IEnumerable<WorkoutSession> FilteredWorkouts =>
+        (workouts ?? new List<WorkoutSession>())
+            .Where(w =>
+                string.IsNullOrWhiteSpace(searchQuery) ||
+                (!string.IsNullOrWhiteSpace(w.Title) &&
+                 w.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)))
+            .Where(w =>
+            {
+                var today = DateTime.Today;
+
+                return selectedFilter switch
+                {
+                    "7" => w.Date >= today.AddDays(-7),
+                    "30" => w.Date >= today.AddDays(-30),
+                    "year" => w.Date.Year == today.Year,
+                    _ => true
+                };
+            })
+            .OrderByDescending(w => w.Date);
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         user = await userManager.GetUserAsync(authState.User);
 
+        if (user == null || string.IsNullOrEmpty(user.Id))
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
         // Hämta användarens mallar för dropdown
         templates = await db.WorkoutSessions
             .Include(w => w.WorkoutExercises)
-            .Where(w => w.UserId == user!.Id && w.IsTemplate)
+            .Where(w => w.UserId == user.Id && w.IsTemplate)
             .OrderBy(w => w.Title)
             .ToListAsync();
+
+        workouts = await db.WorkoutSessions
+            .Where(w => w.UserId == user.Id && !w.IsTemplate)
+            .OrderByDescending(w => w.Date)
+            .ToListAsync();
+    }
+
+    void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+    }
+
+    void ApplyFilter(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value?.ToString() ?? "all";
+    }
+
+    void GoToWorkout(int workoutId)
+    {
+        nav.NavigateTo($"/workout/{workoutId}");
+    }
+    async Task LoadWorkouts()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await userManager.GetUserAsync(authState.User);
+
+        var query = db.WorkoutSessions
+            .Where(w => w.UserId == user!.Id && !w.IsTemplate);
+
+        if (selectedFilter == "7")
+            query = query.Where(w => w.Date >= DateTime.Today.AddDays(-7));
+
+        else if (selectedFilter == "30")
+            query = query.Where(w => w.Date >= DateTime.Today.AddDays(-30));
+
+        else if (selectedFilter == "year")
+            query = query.Where(w => w.Date.Year == DateTime.Today.Year);
+
+        workouts = query
+            .OrderByDescending(w => w.Date)
+            .ToList();
+    }
+
+    async Task DeleteWorkout(int id)
+    {
+        var workout = db.WorkoutSessions.FirstOrDefault(x => x.Id == id);
+
+        if (workout != null)
+        {
+            db.WorkoutSessions.Remove(workout);
+            await db.SaveChangesAsync();
+        }
+
+        await LoadWorkouts();
     }
 
 
     async Task SaveWorkout()
     {
-        model.UserId = user!.Id;
+        if (user == null || string.IsNullOrEmpty(user.Id))
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
+        model.UserId = user.Id;
         model.CreatedAt = DateTime.Now;
         model.IsTemplate = false;
 

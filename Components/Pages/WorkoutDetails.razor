@@ -116,7 +116,9 @@ else
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @{ int index = 1; }
+                                        @{
+                                            int index = 1;
+                                        }
                                         @foreach (var s in we.Sets)
                                         {
                                             <tr>
@@ -146,7 +148,8 @@ else
 
                             <div class="media-upload">
                                 <div class="file-upload">
-                                    <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)" style="display:none" />
+                                    <InputFile id="@($"fileInput_{we.Id}")" OnChange="(e) => UploadMedia(e, we.Id)"
+                                               style="display:none" />
                                     <button class="add-btn small" @onclick="() => TriggerFileInput(we.Id)">Add media</button>
                                 </div>
                                 @if (activeMediaExerciseId == we.Id)
@@ -162,14 +165,18 @@ else
                                     <div class="media-item">
                                         @if (media.MediaType == "image")
                                         {
-                                            <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)" style="cursor:pointer" />
+                                            <img src="@media.FilePath" @onclick="() => OpenLightbox(media.FilePath, media.Note)"
+                                                 style="cursor:pointer" />
                                         }
                                         else
                                         {
-                                            <video controls><source src="@media.FilePath"></video>
+                                            <video controls>
+                                                <source src="@media.FilePath">
+                                            </video>
                                         }
                                         <p class="media-note">@media.Note</p>
-                                        <button class="undo-btn small" @onclick="() => DeleteMedia(media.Id, media.FilePath)">Delete</button>
+                                        <button class="undo-btn small"
+                                                @onclick="() => DeleteMedia(media.Id, media.FilePath)">Delete</button>
                                     </div>
                                 }
                             </div>
@@ -180,6 +187,45 @@ else
             }
         </main>
     </div>
+    @if (showExerciseModal)
+    {
+        <div class="modal-backdrop">
+            <div class="modal-box">
+
+                <h3>Add exercise</h3>
+
+                <input type="text" placeholder="Search exercises..." value="@exerciseSearch" @oninput="OnExerciseSearch" />
+
+                @if (!string.IsNullOrWhiteSpace(exerciseSearch))
+                {
+                    <div class="exercise-search-results">
+                        @foreach (var ex in allExercises.Where(e =>
+                                                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <div class="exercise-search-item" @onclick="() => SelectExercise(ex)">
+                                @ex.Name
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(selectedExerciseName))
+                {
+                    <p>Selected: <b>@selectedExerciseName</b></p>
+                }
+
+                <b>or create new</b>
+                <input placeholder="Exercise name" @bind="newExerciseName" />
+
+                <br /><br />
+
+                <button class="add-btn" @onclick="AddExerciseToWorkout">Add</button>
+                <button class="undo-btn" @onclick="CloseExerciseModal">Cancel</button>
+
+            </div>
+        </div>
+    }
+}
 }
 
 @code {

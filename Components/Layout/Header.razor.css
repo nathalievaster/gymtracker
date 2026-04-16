@@ -9,11 +9,12 @@
 
 .normal-header {
     background: #173B45;
-    padding: 20px;
+    padding: 0;
     color: #ff8225;
 }
 .hero-content h1 {
     font-size: 6em;
+    margin-bottom: 0;
 }
 
 .hero-content p {

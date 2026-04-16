@@ -142,34 +142,6 @@ input::placeholder {
     margin: 0 0 0.25rem;
 }
 
-/* ── Exercise search results ── */
-.exercise-search-results {
-    max-height: 200px;
-    overflow-y: auto;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.exercise-search-item {
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    color: #e0f4ef;
-    font-size: 0.9rem;
-    transition: background 0.15s;
-}
-
-.exercise-search-item:hover,
-.exercise-search-item.selected {
-    background: rgba(184, 242, 230, 0.15);
-    color: #B8F2E6;
-}
-
-.selected-exercise-label {
-    color: #B8F2E6;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
 /* ── Shared animation ── */
 @keyframes modalPop {
     from {
@@ -180,39 +152,4 @@ input::placeholder {
         transform: scale(1);
         opacity: 1;
     }
-}
-
-.exercise-check {
-    display: inline-block;
-    width: 1rem;
-    color: #B8F2E6;
-    font-weight: bold;
-}
-
-.selected-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.chip {
-    background: rgba(184, 242, 230, 0.15);
-    border: 1px solid rgba(184, 242, 230, 0.4);
-    color: #B8F2E6;
-    border-radius: 99px;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.82rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.chip button {
-    background: none;
-    border: none;
-    color: #B8F2E6;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0;
-    line-height: 1;
 }

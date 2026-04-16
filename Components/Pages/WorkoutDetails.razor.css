@@ -123,13 +123,6 @@
     padding: 1.5rem;
     min-width: 0;
 }
-
-.section-title {
-    margin-bottom: 1rem;
-    font-size: 1rem;
-    color: var(--color-text-primary, #333);
-}
-
 /* ── Exercise grid ── */
 .exercise-grid {
     display: grid;
@@ -340,33 +333,6 @@
     margin: 0.3rem;
 }
 
-/* ── Sökresultat ── */
-.exercise-search-results {
-    display: flex;
-    flex-direction: column;
-    max-height: 180px;
-    overflow-y: auto;
-    border: 1px solid rgba(255, 130, 37, 0.3);
-    border-radius: 10px;
-    margin-top: 6px;
-}
-
-.exercise-search-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.15s;
-    color: white;
-}
-
-.exercise-search-item:hover { background: rgba(255, 130, 37, 0.15); }
-.exercise-search-item.selected { background: rgba(255, 130, 37, 0.3); }
-
-.selected-exercise-label {
-    color: #FF8225;
-    font-size: 0.9rem;
-    margin-top: 6px;
-}
 
 .search-input {
     width: 100%;

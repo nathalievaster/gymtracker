@@ -83,7 +83,7 @@ else
         <!-- MAIN CONTENT -->
         <main class="workout-main">
 
-            <h4 class="section-title">Exercises</h4>
+            <h1>Exercises</h1>
 
             @if (!workout.WorkoutExercises.Any())
             {
@@ -187,6 +187,7 @@ else
             }
         </main>
     </div>
+
     @if (showExerciseModal)
     {
         <div class="modal-backdrop">
@@ -194,24 +195,38 @@ else
 
                 <h3>Add exercise</h3>
 
-                <input type="text" placeholder="Search exercises..." value="@exerciseSearch" @oninput="OnExerciseSearch" />
+                <input type="text"
+                       placeholder="Search exercises..."
+                       value="@exerciseSearch"
+                       @oninput="OnExerciseSearch" />
 
                 @if (!string.IsNullOrWhiteSpace(exerciseSearch))
                 {
                     <div class="exercise-search-results">
                         @foreach (var ex in allExercises.Where(e =>
-                                                                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
+                            e.Name.Contains(exerciseSearch, StringComparison.OrdinalIgnoreCase)))
                         {
-                            <div class="exercise-search-item" @onclick="() => SelectExercise(ex)">
+                            <div class="exercise-search-item @(selectedExerciseIds.Contains(ex.Id) ? "selected" : "")"
+                                 @onclick="() => SelectExercise(ex)">
+                                <span class="exercise-check">@(selectedExerciseIds.Contains(ex.Id) ? "✓" : "")</span>
                                 @ex.Name
                             </div>
                         }
                     </div>
                 }
 
-                @if (!string.IsNullOrWhiteSpace(selectedExerciseName))
+                @if (selectedExercises.Any())
                 {
-                    <p>Selected: <b>@selectedExerciseName</b></p>
+                    <div class="selected-chips">
+                        @foreach (var kvp in selectedExercises)
+                        {
+                            <span class="chip">
+                                @kvp.Value
+                                <button type="button"
+                                        @onclick="() => RemoveSelectedExercise(kvp.Key)">×</button>
+                            </span>
+                        }
+                    </div>
                 }
 
                 <b>or create new</b>
@@ -226,13 +241,13 @@ else
         </div>
     }
 }
-}
 
 @code {
 
     List<Exercise> allExercises = new();
 
-    int selectedExerciseId = 0;
+    HashSet<int> selectedExerciseIds = new();
+    Dictionary<int, string> selectedExercises = new();
     string newExerciseName = "";
 
     [Parameter] public int id { get; set; }
@@ -260,7 +275,6 @@ else
     int selectedTemplateId = 0;
 
     ApplicationUser? user;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -294,7 +308,6 @@ else
             .ToListAsync();
     }
 
-
     void GoBack()
     {
         nav.NavigateTo("/dashboard");
@@ -303,14 +316,19 @@ else
     void OpenExerciseModal()
     {
         showExerciseModal = true;
+        exerciseSearch = "";
+        selectedExerciseIds = new();
+        selectedExercises = new();
+        newExerciseName = "";
     }
 
     void CloseExerciseModal()
     {
         showExerciseModal = false;
         exerciseSearch = "";
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
+        selectedExerciseIds = new();
+        selectedExercises = new();
+        newExerciseName = "";
     }
 
     // Sparar detta träningspass som en mall
@@ -476,61 +494,72 @@ else
 
     // Variabler för övningssökning i modal
     string exerciseSearch = "";
-    string selectedExerciseName = "";
 
     void OnExerciseSearch(ChangeEventArgs e)
     {
         exerciseSearch = e.Value?.ToString() ?? "";
-        // Nollställ val om man börjar söka igen
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
     }
 
     void SelectExercise(Exercise ex)
     {
-        selectedExerciseId = ex.Id;
-        selectedExerciseName = ex.Name;
-        exerciseSearch = "";
+        if (selectedExerciseIds.Contains(ex.Id))
+        {
+            selectedExerciseIds.Remove(ex.Id);
+            selectedExercises.Remove(ex.Id);
+        }
+        else
+        {
+            selectedExerciseIds.Add(ex.Id);
+            selectedExercises[ex.Id] = ex.Name;
+        }
     }
 
+    void RemoveSelectedExercise(int exerciseId)
+    {
+        selectedExerciseIds.Remove(exerciseId);
+        selectedExercises.Remove(exerciseId);
+    }
 
     async Task AddExerciseToWorkout()
     {
-        Exercise? exercise = null;
+        if (workout == null) return;
 
-        if (selectedExerciseId != 0)
-            exercise = db.Exercises.FirstOrDefault(e => e.Id == selectedExerciseId);
+        foreach (var exerciseId in selectedExerciseIds)
+        {
+            var exercise = db.Exercises.FirstOrDefault(e => e.Id == exerciseId);
+            if (exercise == null) continue;
+
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = workout.Id,
+                ExerciseId = exercise.Id
+            });
+        }
 
         if (!string.IsNullOrWhiteSpace(newExerciseName))
         {
-            exercise = new Exercise { Name = newExerciseName };
+            var exercise = new Exercise { Name = newExerciseName.Trim() };
 
             db.Exercises.Add(exercise);
-
             await db.SaveChangesAsync();
+
+            allExercises = db.Exercises
+                .OrderBy(e => e.Name)
+                .ToList();
+
+            db.WorkoutExercises.Add(new WorkoutExercise
+            {
+                WorkoutSessionId = workout.Id,
+                ExerciseId = exercise.Id
+            });
         }
-
-        if (exercise == null) return;
-
-        var workoutExercise = new WorkoutExercise
-        {
-            WorkoutSessionId = workout!.Id,
-            ExerciseId = exercise.Id
-        };
-
-        db.WorkoutExercises.Add(workoutExercise);
 
         await db.SaveChangesAsync();
 
         await ReloadWorkout();
 
-        showExerciseModal = false;
-
-        newExerciseName = "";
-        selectedExerciseId = 0;
-        selectedExerciseName = "";
+        CloseExerciseModal();
     }
-
 
     async Task DeleteExercise(int workoutExerciseId)
     {
@@ -547,7 +576,6 @@ else
         await ReloadWorkout();
     }
 
-
     void StartAddSet(int workoutExerciseId)
     {
         activeSetExerciseId = workoutExerciseId;
@@ -556,12 +584,10 @@ else
         newWeight = 0;
     }
 
-
     void CancelSet()
     {
         activeSetExerciseId = 0;
     }
-
 
     async Task SaveSet(int workoutExerciseId)
     {
@@ -582,7 +608,6 @@ else
 
         await ReloadWorkout();
     }
-
 
     async Task ReloadWorkout()
     {

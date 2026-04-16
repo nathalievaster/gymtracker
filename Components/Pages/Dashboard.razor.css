@@ -1,65 +1,21 @@
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal {
-    background-color: #173B45;
-    padding: 1.5rem;
-    border-radius: 12px;
-    text-align: center;
-    max-width: 360px;
-    width: 92%;
-    color: #FF8225;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    animation: modalPop 0.25s ease;
-}
-
-.modal p {
-    margin: 0.8rem 0 1.2rem 0;
-}
-
-.modal button {
-    margin: 0.25rem;
-}
-
-@keyframes modalPop {
-    from {
-        transform: scale(0.94);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 /* LAYOUT */
 .dashboard-layout {
-    display: grid;
-    grid-template-columns: 350px minmax(0, 1fr);
-    gap: 1.25rem;
-    align-items: start;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 0.75rem 1.5rem;
+    display: flex;
+    gap: 0;
+    min-height: 100vh;
+    align-items: flex-start;
 }
 
 /* SIDEBAR */
-.sidebar,
 .workout-sidebar {
+    width: 320px;
+    min-width: 320px;
     background: #173B45;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 0.85rem;
     position: sticky;
-    top: 0.75rem;
-    max-height: calc(100vh - 1.5rem);
+    top: 0;
+    max-height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -75,17 +31,28 @@
     width: 100%;
 }
 
+.actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
 /* MAIN CONTENT */
 .dashboard-main {
+    flex: 1;
     min-width: 0;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 14px;
-    max-width: 100%;
-    margin: 0 0 1.25rem 0;
+    margin: 0;
 }
 
 .stat-card {
@@ -110,7 +77,6 @@
 
 .chart-card {
     width: 100%;
-    max-width: 100%;
     margin: 0;
     padding: 1.1rem;
     background: #173B45;
@@ -131,13 +97,20 @@
 
 @media (max-width: 900px) {
     .dashboard-layout {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        flex-direction: column;
+        min-height: auto;
     }
 
     .sidebar,
     .workout-sidebar {
-        position: static;
+        width: 100%;
+        min-width: 0;
         max-height: none;
+        position: static;
+        border-radius: 0;
+    }
+
+    .dashboard-main {
+        padding: 1rem;
     }
 }

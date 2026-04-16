@@ -104,21 +104,7 @@ option {
     align-items: flex-start;
 }
 
-.exercise-sidebar {
-    min-width: 300px;
-    width: auto;
-    background: #173B45;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    min-height: 100vh;
-    position: sticky;
-    top: 0;
-    margin: 1em;
-}
-
-.exercise-sidebar h1 {
+.sidebar h1 {
     color: #FF8225;
     font-size: 1.1rem;
     text-align: center;

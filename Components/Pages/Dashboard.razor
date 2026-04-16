@@ -38,102 +38,114 @@
     </div>
 }
 
-@if (workouts != null)
-{
-    <!-- Statistik -->
-    <div class="stats-grid">
+<div class="dashboard-layout">
 
-        <div class="stat-card">
-            <h3>@totalWorkouts</h3>
-            <p>Workouts</p>
+    <!-- SIDEBAR -->
+    <aside class="workout-sidebar">
+
+        <div class="sidebar-top">
+            <button class="add-btn create-btn" type="button" @onclick="GoCreate">
+                Create workout
+            </button>
         </div>
 
-        <div class="stat-card">
-            <h3>@totalExercises</h3>
-            <p>Exercises</p>
+        <div class="sidebar-filters">
+            <select value="@selectedFilter" @onchange="ApplyFilter">
+                <option value="all">All time</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="year">This year</option>
+            </select>
+
+            <input type="text"
+                   placeholder="Search workouts..."
+                   value="@searchQuery"
+                   @oninput="OnSearchInput"
+                   class="search-input" />
         </div>
 
-        <div class="stat-card">
-            <h3>@totalSets</h3>
-            <p>Sets logged</p>
+        <div class="sidebar-list">
+            @if (workouts == null)
+            {
+                <p class="sidebar-state">Loading workouts...</p>
+            }
+            else if (!FilteredWorkouts.Any())
+            {
+                <p class="sidebar-state">No workouts found.</p>
+            }
+            else
+            {
+                <ul class="workout-list">
+                    @foreach (var w in FilteredWorkouts)
+                    {
+                        <li class="workout-list-item">
+                            <div class="workout-list-main" @onclick="() => GoToWorkout(w.Id)">
+                                <span class="workout-title">@w.Title</span>
+                                <span class="workout-date">@w.Date.ToShortDateString()</span>
+                            </div>
+
+                            <div class="actions">
+                                <button class="add-btn small" @onclick="() => GoToWorkout(w.Id)">
+                                    Open
+                                </button>
+
+                                <button class="undo-btn small" @onclick="() => DeleteWorkout(w.Id)">
+                                    Delete
+                                </button>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
         </div>
 
-        <div class="stat-card">
-            <h3>@totalVolume</h3>
-            <p>Total volume</p>
-        </div>
+    </aside>
 
-        <div class="stat-card">
-            <h3>@weeklyFrequency.ToString("0.0")</h3>
-            <p>Workouts / week</p>
-        </div>
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main">
 
-    </div>
-}
-
-<div class="buttondiv">
-    <button class="add-btn" type="button" @onclick="GoCreate">Create workout</button>
-</div>
-
-@if (workouts != null && workouts.Any())
-{
-    <!-- Graf: antal pass per vecka -->
-    <div class="chart-card">
-
-        <h3>Workouts per week</h3>
-
-        <canvas id="progressChart"></canvas>
-
-    </div>
-}
-
-<!-- Filter och sökruta bredvid varandra -->
-<div class="filter-bar">
-
-    <select value="@selectedFilter" @onchange="ApplyFilter">
-        <option value="all">All time</option>
-        <option value="7">Last 7 days</option>
-        <option value="30">Last 30 days</option>
-        <option value="year">This year</option>
-    </select>
-
-    <!-- Sökruta – listan filtreras vid varje knapptryckning -->
-    <input type="text" placeholder="Search workouts..." value="@searchQuery" @oninput="OnSearchInput"
-           class="search-input" />
-
-</div>
-
-@if (workouts == null)
-{
-    <p>Loading workouts...</p>
-}
-else if (!FilteredWorkouts.Any())
-{
-    <p>No workouts found.</p>
-}
-else
-{
-    <ul>
-        @foreach (var w in FilteredWorkouts)
+        @if (workouts != null)
         {
-            <li>
-                <a href="/workout/@w.Id">
-                    <b>@w.Title</b> (@w.Date.ToShortDateString())
-                </a>
+            <div class="stats-grid">
 
-                <div class="actions">
-                    <button class="add-btn small" @onclick="() => GoToWorkout(w.Id)">
-                        Add exercises
-                    </button>
-
-                    <button class="undo-btn" @onclick="() => DeleteWorkout(w.Id)">
-                        Delete
-                    </button>
+                <div class="stat-card">
+                    <h3>@totalWorkouts</h3>
+                    <p>Workouts</p>
                 </div>
-            </li>
+
+                <div class="stat-card">
+                    <h3>@totalExercises</h3>
+                    <p>Exercises</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>@totalSets</h3>
+                    <p>Sets logged</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>@totalVolume</h3>
+                    <p>Total volume</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>@weeklyFrequency.ToString("0.0")</h3>
+                    <p>Workouts / week</p>
+                </div>
+
+            </div>
         }
-    </ul>
-}
+
+        @if (workouts != null && workouts.Any())
+        {
+            <div class="chart-card">
+                <h3>Workouts per week</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+        }
+
+    </main>
+</div>
 
 @code {
 

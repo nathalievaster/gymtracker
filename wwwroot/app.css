@@ -34,6 +34,7 @@ button.undo-btn {
 button.add-btn:hover {
     background-color: #bd611b;
 }
+
 button.undo-btn:hover {
     background-color: #802d2d;
 }
@@ -111,4 +112,18 @@ textarea {
 
 h1 {
     text-align: center;
+}
+
+.sidebar {
+    min-width: 300px;
+    width: auto;
+    background: #173B45;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    margin: 1em;
 }

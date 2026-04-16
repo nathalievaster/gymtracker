@@ -40,12 +40,6 @@
     }
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: #FF8225;
-}
-
 /* LAYOUT */
 .dashboard-layout {
     display: grid;

@@ -104,13 +104,6 @@ option {
     align-items: flex-start;
 }
 
-.sidebar h1 {
-    color: #FF8225;
-    font-size: 1.1rem;
-    text-align: center;
-    margin: 0;
-}
-
 .sidebar-divider {
     border: none;
     border-top: 1px solid rgba(255, 130, 37, 0.2);
